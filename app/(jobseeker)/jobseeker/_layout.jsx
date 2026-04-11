@@ -20,12 +20,57 @@ export default function JobSeekerLayout() {
   const { isMonitoring } = useSubscriptionMonitor();
 
   // Get notification count with real-time updates
-  const { count: notificationCount, isLoading: isLoadingCount, refetch: refetchCount } = useNotificationCount();
+  const { count: notificationCount, isLoading: isLoadingCount, refetch: refetchCount } = useNotificationCount({ 
+    enabled: userStatus === "active" 
+  });
+  const [userStatus, setUserStatus] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [isReady, setIsReady] = useState(false);
 
-  // Load user profile
+  // Load user profile and status
   useEffect(() => {
     loadUserProfile();
+    checkStatus();
   }, []);
+
+  const checkStatus = async () => {
+    try {
+      const [status, subStatus] = await Promise.all([
+        SecureStore.getItemAsync("user_status"),
+        SecureStore.getItemAsync("subscription_status")
+      ]);
+      setUserStatus(status);
+      setSubscriptionStatus(subStatus);
+      setIsReady(true);
+    } catch (error) {
+      console.error("Error checking user status:", error);
+      setIsReady(true);
+    }
+  };
+
+  // 🛡️ Safe Browsing Guard - Access control based on subscription status
+  useEffect(() => {
+    if (!isReady || !userStatus) return;
+
+    const isLandingMatches = pathname.includes("/landing-matches");
+    const isJobDetailsV2 = pathname.includes("/job-details-v2");
+
+    if (subscriptionStatus === "active") {
+      // Paid users can access the main app (Home). They should not see landing-matches.
+      if (isLandingMatches) {
+        console.log("🛡️ Paid user detected - redirecting to home");
+        router.replace("/(jobseeker)/jobseeker/home");
+      }
+    } else {
+      // Unpaid users (even if admin-approved) are restricted to landing-matches
+      const isAllowedPage = isLandingMatches || isJobDetailsV2 || pathname.includes("/payment");
+      
+      if (!isAllowedPage) {
+        console.log("🛡️ Unpaid user blocked from", pathname, "- redirecting to landing-matches");
+        router.replace("/(jobseeker)/jobseeker/landing-matches");
+      }
+    }
+  }, [pathname, userStatus, isReady]);
 
   // Refetch notification count when pathname changes (navigating back from notifications)
   useEffect(() => {
@@ -162,75 +207,77 @@ export default function JobSeekerLayout() {
           gap: theme.spacing.sm,
         }}
       >
-        {/* Notifications */}
-        <TouchableOpacity
-          onPress={() => {
-            router.push("/jobseeker/notifications");
-            // Refetch when returning from notifications page
-            setTimeout(() => refetchCount(), 500);
-          }}
-          style={{
-            padding: theme.spacing.sm,
-            borderRadius: theme.borderRadius.full,
-            backgroundColor: theme.colors.background.accent,
-            position: "relative",
-          }}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="notifications-outline"
-            size={20}
-            color={theme.colors.primary.teal}
-          />
-          
-          {/* Notification badge with count */}
-          {isLoadingCount ? (
-            <View
-              style={{
-                position: "absolute",
-                top: 4,
-                right: 4,
-                width: 18,
-                height: 18,
-                borderRadius: 9,
-                backgroundColor: theme.colors.status.error,
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 2,
-                borderColor: theme.colors.background.card,
-              }}
-            >
-              <ActivityIndicator size="small" color="white" />
-            </View>
-          ) : notificationCount > 0 ? (
-            <View
-              style={{
-                position: "absolute",
-                top: 4,
-                right: 4,
-                minWidth: 18,
-                height: 18,
-                borderRadius: 9,
-                backgroundColor: theme.colors.status.error,
-                alignItems: "center",
-                justifyContent: "center",
-                paddingHorizontal: 4,
-                borderWidth: 2,
-                borderColor: theme.colors.background.card,
-              }}
-            >
-              <Text
+        {/* Notifications - Only show for active users */}
+        {userStatus === "active" && (
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/(jobseeker)/(others)/notifications");
+              // Refetch when returning from notifications page
+              setTimeout(() => refetchCount(), 500);
+            }}
+            style={{
+              padding: theme.spacing.sm,
+              borderRadius: theme.borderRadius.full,
+              backgroundColor: theme.colors.background.accent,
+              position: "relative",
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={20}
+              color={theme.colors.primary.teal}
+            />
+            
+            {/* Notification badge with count */}
+            {isLoadingCount ? (
+              <View
                 style={{
-                  color: "white",
-                  fontSize: 10,
-                  fontFamily: theme.typography.fonts.bold,
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: theme.colors.status.error,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 2,
+                  borderColor: theme.colors.background.card,
                 }}
               >
-                {notificationCount > 9 ? "9+" : notificationCount}
-              </Text>
-            </View>
-          ) : null}
-        </TouchableOpacity>
+                <ActivityIndicator size="small" color="white" />
+              </View>
+            ) : notificationCount > 0 ? (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: theme.colors.status.error,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingHorizontal: 4,
+                  borderWidth: 2,
+                  borderColor: theme.colors.background.card,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 10,
+                    fontFamily: theme.typography.fonts.bold,
+                  }}
+                >
+                  {notificationCount > 9 ? "9+" : notificationCount}
+                </Text>
+              </View>
+            ) : null}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -346,11 +393,11 @@ export default function JobSeekerLayout() {
               <Stack.Screen name="interviews" />
               <Stack.Screen name="matching-jobs" />
               <Stack.Screen name="profile" />
-              <Stack.Screen name="notifications" />
             </Stack>
           </View>
 
-          <BottomTabs />
+          {/* Hide Bottom Tabs for inactive users */}
+          {userStatus === "active" && <BottomTabs />}
         </SafeAreaWrapper>
       </View>
     </>

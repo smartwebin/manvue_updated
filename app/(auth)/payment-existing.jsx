@@ -208,6 +208,9 @@ export default function PaymentExistingScreen() {
           await SecureStore.setItemAsync('subscription_id', verifyResponse.data.subscription.subscription_id.toString());
           await SecureStore.setItemAsync('subscription_end_date', verifyResponse.data.subscription.end_date);
           await SecureStore.setItemAsync('subscription_status', verifyResponse.data.subscription.status);
+
+          // IMPORTANT: Update user_status to 'active' to unlock the app
+          await SecureStore.setItemAsync('user_status', 'active');
         }
 
         setIsProcessingPayment(false);

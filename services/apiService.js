@@ -3566,6 +3566,49 @@ class ApiService {
       };
     }
   }
+  /**
+   * Get Matching Jobs V2 (Allow Pending Status)
+   * Fetches jobs that match the jobseeker's skills, even for inactive users
+   * @param {Object} params - { user_id, search_query, limit, offset }
+   * @returns {Promise} API response with matching jobs data
+   */
+  async getMatchingJobsV2(params) {
+    try {
+      const { user_id, search_query = "", limit = 20, offset = 0 } = params;
+
+      const formData = new FormData();
+      formData.append("user_id", user_id.toString());
+      formData.append("search_query", search_query);
+      formData.append("limit", limit.toString());
+      formData.append("offset", offset.toString());
+
+      const response = await apiClient.post(
+        API_CONFIG.ENDPOINTS.GET_MATCHING_JOBS_V2,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+        },
+      );
+
+      return {
+        success: response.data?.success || false,
+        data: response.data.data,
+        message: response.data.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        errors: error.response?.data?.errors || [
+          error.message || "Failed to fetch matches",
+        ],
+        message: error.response?.data?.message || "Failed to fetch matches",
+        data: null,
+      };
+    }
+  }
 
   /**
    * Get Job Details for Jobseeker
@@ -3725,6 +3768,92 @@ class ApiService {
   // ============================================
   // ADD TO apiService.js
   // ============================================
+
+  /**
+   * Get Job Details V2 (Allow Pending Status)
+   * Fetches job info for pending users
+   * @param {Object} params - { job_id, user_id }
+   * @returns {Promise} API response with job details
+   */
+  async getJobDetailsV2(params) {
+    try {
+      const { job_id, user_id } = params;
+      const formData = new FormData();
+      formData.append("job_id", job_id.toString());
+      formData.append("user_id", user_id.toString());
+
+      const response = await apiClient.post(
+        API_CONFIG.ENDPOINTS.GET_JOB_DETAILS_V2,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+        },
+      );
+
+      return {
+        success: response.data?.success || false,
+        data: response.data.data,
+        message: response.data.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        errors: error.response?.data?.errors || [
+          error.message || "Failed to fetch job details",
+        ],
+        message: error.response?.data?.message || "Failed to fetch job details",
+        data: null,
+      };
+    }
+  }
+
+  /**
+   * Submit Job Application V2 (Handles Platform gating)
+   * @param {Object} params - Application data
+   * @returns {Promise} API response
+   */
+  async submitJobApplicationV2(params) {
+    try {
+      const formData = new FormData();
+      Object.keys(params).forEach((key) => {
+        if (params[key] !== null) formData.append(key, params[key].toString());
+      });
+
+      const response = await apiClient.post(
+        API_CONFIG.ENDPOINTS.SUBMIT_JOB_APPLICATION_V2,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+        },
+      );
+
+      return {
+        success: response.data?.success || false,
+        data: response.data.data,
+        message: response.data.message,
+        status: response.status,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        errors: error.response?.data?.errors || [
+          error.message || "Failed to submit application",
+        ],
+        message:
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to submit application",
+        status: error.response?.status,
+        code: error.response?.data?.code,
+      };
+    }
+  }
 
   /**
    * Get Employer Interviews

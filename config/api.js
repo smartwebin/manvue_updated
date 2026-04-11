@@ -1,10 +1,10 @@
 // API Configuration for Manvue App
 export const API_CONFIG = {
   // Base URLs
-  BASE_URL: "https://www.manvue.in/api",
-  BASE_IMG_URL: "https://www.manvue.in/photos",
-  // BASE_URL: "https://work.phpwebsites.in//manvue/api",
-  // BASE_IMG_URL: "https://work.phpwebsites.in//manvue/photos",
+  // BASE_URL: "https://www.manvue.in/api",
+  // BASE_IMG_URL: "https://www.manvue.in/photos",
+  BASE_URL: "https://work.phpwebsites.in//manvue/api",
+  BASE_IMG_URL: "https://work.phpwebsites.in//manvue/photos",
 
   // API Endpoints
   ENDPOINTS: {
@@ -82,6 +82,11 @@ export const API_CONFIG = {
     GET_MATCHING_JOBS: "/get-matching-jobs.php",
     GET_JOB_DETAILS: "/get-job-details.php",
     SUBMIT_JOB_APPLICATION: "/submit-job-application.php",
+
+    // V2 Endpoints (Allow Pending status)
+    GET_MATCHING_JOBS_V2: "/get-matching-jobs-v2.php",
+    GET_JOB_DETAILS_V2: "/get-job-details-v2.php",
+    SUBMIT_JOB_APPLICATION_V2: "/submit-job-application-v2.php",
 
     // Interview Endpoints
     GET_EMPLOYER_INTERVIEWS: "/get-employer-interviews.php",

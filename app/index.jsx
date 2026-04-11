@@ -46,9 +46,17 @@ export default function Index() {
 
       if (token) {
         // User is logged in, verify we have both user type and user_id.
+        const userStatus = await SecureStore.getItemAsync("user_status");
 
         if (userType && userId) {
           if (userType === "jobseeker") {
+            // Check if jobseeker is pending approval (inactive)
+            if (userStatus === "inactive") {
+              console.log("⏳ Profile pending approval, redirecting to landing-matches");
+              router.replace("/(jobseeker)/jobseeker/landing-matches");
+              return;
+            }
+
             // Check if jobseeker has paid subscription
             const hasPaidSubscription = subscriptionStatus === "active";
 

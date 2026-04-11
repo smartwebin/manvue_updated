@@ -663,17 +663,9 @@ export default function Signup() {
 
         console.log("✅ Signup successful, User ID:", response.data.user_id);
 
-        // Check if payment is required (jobseekers only)
-        if (response.payment_required === true && userType === "jobseeker") {
-          console.log(
-            "💳 Payment required for jobseeker, redirecting to payment screen",
-          );
-          router.replace("/payment");
-        } else {
-          // Navigate to jobseeker home (since this is jobseeker signup only)
-          console.log("✅ No payment required, navigating to jobseeker home");
-          router.replace("/jobseeker/home");
-        }
+        // Always redirect new signups to the landing-matches lobby initially
+        console.log("🆕 New jobseeker signup, redirecting to landing-matches lobby");
+        router.replace("/(jobseeker)/jobseeker/landing-matches");
       } else {
         console.log("response", response);
         // Handle validation errors from server - display exact errors from API
@@ -699,10 +691,14 @@ export default function Signup() {
     }
   };
 
-  const handleSuccessModalClose = () => {
+  const handleSuccessModalClose = async () => {
     setShowSuccessModal(false);
-    // Navigate to jobseeker home
-    router.push("/jobseeker/home");
+    const status = await SecureStore.getItemAsync("user_status");
+    if (status === "inactive") {
+      router.push("/(jobseeker)/jobseeker/landing-matches");
+    } else {
+      router.push("/jobseeker/home");
+    }
   };
 
   // Verification handler (called when verification succeeds)

@@ -8,12 +8,13 @@ import { AppState } from 'react-native';
  * Custom hook to fetch and manage unread notification count
  * Auto-refetches on app focus and when new push notification is received
  */
-export function useNotificationCount() {
+export function useNotificationCount(options = {}) {
   const queryClient = useQueryClient();
 
   // Fetch unread count
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['notificationCount'],
+    ...options,
     queryFn: async () => {
       try {
         const result = await apiService.getNotifications({
@@ -51,8 +52,10 @@ export function useNotificationCount() {
     // Listen for incoming notifications
     const notificationSubscription = Notifications.addNotificationReceivedListener(() => {
       // Invalidate and refetch when new notification is received
-      queryClient.invalidateQueries({ queryKey: ['notificationCount'] });
-      refetch();
+      if (options.enabled !== false) {
+        queryClient.invalidateQueries({ queryKey: ['notificationCount'] });
+        refetch();
+      }
     });
 
     // ✅ FIXED: Proper cleanup - call .remove() directly on each subscription
@@ -73,11 +76,12 @@ export function useNotificationCount() {
 /**
  * Custom hook for notification stats (all categories)
  */
-export function useNotificationStats() {
+export function useNotificationStats(options = {}) {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['notificationStats'],
+    ...options,
     queryFn: async () => {
       try {
         const result = await apiService.getNotifications({
@@ -133,8 +137,10 @@ export function useNotificationStats() {
     });
 
     const notificationSubscription = Notifications.addNotificationReceivedListener(() => {
-      queryClient.invalidateQueries({ queryKey: ['notificationStats'] });
-      refetch();
+      if (options.enabled !== false) {
+        queryClient.invalidateQueries({ queryKey: ['notificationStats'] });
+        refetch();
+      }
     });
 
     // ✅ FIXED: Proper cleanup

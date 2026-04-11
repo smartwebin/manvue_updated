@@ -1,0 +1,479 @@
+import apiService from "@/services/apiService";
+import theme from "@/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  RefreshControl,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import SafeAreaWrapper from "@/components/SafeAreaWrapper";
+
+const { width, height } = Dimensions.get("window");
+
+export default function LandingMatchesScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [error, setError] = useState(null);
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
+    try {
+      const [id, name] = await Promise.all([
+        SecureStore.getItemAsync("user_id"),
+        SecureStore.getItemAsync("user_name"),
+      ]);
+      setUserId(id);
+      setUserName(name || "Jobseeker");
+      if (id) {
+        fetchMatches(id);
+      }
+    } catch (err) {
+      setError("Session expired. Please log in again.");
+    }
+  };
+
+  const fetchMatches = async (id, isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
+    try {
+      const response = await apiService.getMatchingJobsV2({
+        user_id: id,
+        limit: 10,
+        offset: 0,
+      });
+
+      if (response.success) {
+        setJobs(response.data.jobs || []);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }).start();
+      } else {
+        setError(response.message);
+      }
+    } catch (err) {
+      setError("Failed to load matches.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchMatches(userId, true);
+  };
+
+  const renderJobCard = ({ item, index }) => {
+    const slideAnim = new Animated.Value(50);
+    Animated.spring(slideAnim, {
+      toValue: 0,
+      tension: 20,
+      friction: 7,
+      delay: index * 100,
+      useNativeDriver: true,
+    }).start();
+
+    return (
+      <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
+        <TouchableOpacity
+          activeOpacity={0.95}
+          onPress={() => router.push(`/job-details-v2/${item.job_id}`)}
+          style={{
+            marginHorizontal: theme.spacing.lg,
+            marginBottom: theme.spacing.lg,
+            borderRadius: theme.borderRadius.xxl,
+            backgroundColor: theme.colors.background.card,
+            ...theme.shadows.lg,
+            overflow: "hidden",
+          }}
+        >
+          <LinearGradient
+            colors={["rgba(27, 163, 163, 0.05)", "rgba(255, 255, 255, 1)"]}
+            style={{ padding: theme.spacing.lg }}
+          >
+            {/* Header: Company & Match */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+              >
+                <View
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 15,
+                    backgroundColor: theme.colors.background.accent,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: theme.spacing.md,
+                    borderWidth: 1,
+                    borderColor: "rgba(27, 163, 163, 0.2)",
+                  }}
+                >
+                  {item.company_logo ? (
+                    <Image
+                      source={{ uri: item.company_logo }}
+                      style={{ width: 40, height: 40, borderRadius: 10 }}
+                    />
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: "bold",
+                        color: theme.colors.primary.teal,
+                      }}
+                    >
+                      {item.company_name?.charAt(0)}
+                    </Text>
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: theme.typography.sizes.md,
+                      fontFamily: theme.typography.fonts.bold,
+                      color: theme.colors.text.primary,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {item.job_title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: theme.typography.sizes.sm,
+                      fontFamily: theme.typography.fonts.medium,
+                      color: theme.colors.text.secondary,
+                    }}
+                  >
+                    {item.company_name}
+                  </Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  backgroundColor: "rgba(27, 163, 163, 0.1)",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: theme.colors.primary.teal,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    color: theme.colors.primary.teal,
+                  }}
+                >
+                  {item.match_percentage}% Match
+                </Text>
+              </View>
+            </View>
+
+            {/* Tags */}
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 8,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: theme.colors.background.secondary,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 8,
+                }}
+              >
+                <Ionicons
+                  name="location-outline"
+                  size={14}
+                  color={theme.colors.primary.teal}
+                />
+                <Text
+                  style={{
+                    marginLeft: 4,
+                    fontSize: 12,
+                    color: theme.colors.text.secondary,
+                  }}
+                >
+                  {item.location}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: theme.colors.background.secondary,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 8,
+                }}
+              >
+                <Ionicons
+                  name="briefcase-outline"
+                  size={14}
+                  color={theme.colors.primary.teal}
+                />
+                <Text
+                  style={{
+                    marginLeft: 4,
+                    fontSize: 12,
+                    color: theme.colors.text.secondary,
+                  }}
+                >
+                  {item.experience_range}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: theme.colors.background.secondary,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 8,
+                }}
+              >
+                <Ionicons
+                  name="cash-outline"
+                  size={14}
+                  color={theme.colors.primary.teal}
+                />
+                <Text
+                  style={{
+                    marginLeft: 4,
+                    fontSize: 12,
+                    color: theme.colors.text.secondary,
+                  }}
+                >
+                  {item.salary_range || "Market Rate"}
+                </Text>
+              </View>
+            </View>
+
+            {/* Action Bar */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderTopWidth: 1,
+                borderTopColor: theme.colors.border.light,
+                paddingTop: theme.spacing.md,
+              }}
+            >
+              <Text style={{ fontSize: 10, color: theme.colors.text.tertiary }}>
+                Posted {item.posted_time}
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text
+                  style={{
+                    color: theme.colors.primary.teal,
+                    fontWeight: "bold",
+                    fontSize: 14,
+                    marginRight: 4,
+                  }}
+                >
+                  View Details
+                </Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={16}
+                  color={theme.colors.primary.teal}
+                />
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  return (
+    <SafeAreaWrapper backgroundColor={theme.colors.background.primary}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* Dynamic Header */}
+      <View
+        style={{
+          paddingHorizontal: theme.spacing.lg,
+          paddingBottom: theme.spacing.md,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 4,
+          }}
+        >
+          <View>
+            <Text
+              style={{
+                fontSize: 16,
+                color: theme.colors.text.secondary,
+                fontFamily: theme.typography.fonts.medium,
+              }}
+            >
+              Hello,
+            </Text>
+            <Text
+              style={{
+                fontSize: 24,
+                color: theme.colors.text.primary,
+                fontFamily: theme.typography.fonts.bold,
+              }}
+            >
+              {userName}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 10,
+              backgroundColor: "rgba(255, 59, 48, 0.1)",
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "rgba(255, 59, 48, 0.2)",
+            }}
+            onPress={async () => {
+              await SecureStore.deleteItemAsync("user_id");
+              await SecureStore.deleteItemAsync("jwt_token");
+              await SecureStore.deleteItemAsync("user_status");
+              router.replace("/(auth)/signin");
+            }}
+          >
+            <Ionicons
+              name="log-out-outline"
+              size={18}
+              color="#FF3B30"
+              style={{ marginRight: 4 }}
+            />
+            <Text
+              style={{ color: "#FF3B30", fontWeight: "bold", fontSize: 13 }}
+            >
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <LinearGradient
+          colors={[theme.colors.primary.teal, theme.colors.secondary.darkTeal]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            borderRadius: 12,
+            padding: 12,
+            marginTop: 10,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <Ionicons name="time-outline" size={20} color="white" />
+          <View style={{ marginLeft: 10 }}>
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 14 }}>
+              Premium Matches Preview
+            </Text>
+            <Text style={{ color: "rgba(255, 255, 255, 0.8)", fontSize: 11 }}>
+              Upgrade to Premium to apply and unlock full features.
+            </Text>
+          </View>
+        </LinearGradient>
+      </View>
+
+      {loading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color={theme.colors.primary.teal} />
+          <Text style={{ marginTop: 10, color: theme.colors.text.secondary }}>
+            Finding best matches for you...
+          </Text>
+        </View>
+      ) : (
+        <Animated.FlatList
+          data={jobs}
+          renderItem={renderJobCard}
+          keyExtractor={(item) => item.job_id.toString()}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          style={{ opacity: fadeAnim }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.colors.primary.teal}
+            />
+          }
+          ListHeaderComponent={() => (
+            <View
+              style={{
+                paddingHorizontal: theme.spacing.lg,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: theme.typography.fonts.bold,
+                  color: theme.colors.text.primary,
+                }}
+              >
+                Top Matches For You
+              </Text>
+            </View>
+          )}
+          ListEmptyComponent={() => (
+            <View style={{ flex: 1, alignItems: "center", marginTop: 50 }}>
+              <Ionicons
+                name="search-outline"
+                size={60}
+                color={theme.colors.border.light}
+              />
+              <Text
+                style={{ marginTop: 10, color: theme.colors.text.secondary }}
+              >
+                No matches found yet.
+              </Text>
+            </View>
+          )}
+        />
+      )}
+    </SafeAreaWrapper>
+  );
+}

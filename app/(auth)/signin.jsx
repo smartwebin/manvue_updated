@@ -146,15 +146,21 @@ export default function JobSeekerLogin() {
             console.log("📦 Subscription data:", response.data?.subscription);
           }
 
-          // Check subscription status
+          // Fetch subscription data
           const subscription = response.data?.subscription;
           
-          if (!subscription) {
-            // No subscription data - shouldn't happen but handle it
-            console.log("⚠️ No subscription data returned - redirecting to payment");
-            router.replace("/payment-existing");
+          // ====== NEW PAID-FIRST ACCESS FLOW ======
+          // Priority 1: Check if jobseeker has an active subscription
+          if (subscription?.has_active_subscription === true) {
+            console.log("✅ Active subscription found, redirecting to home");
+            router.replace("/jobseeker/home");
             return;
           }
+
+          // Priority 2: Fallback for all unpaid users (Redirect to Lobby)
+          console.log("💳 No active subscription, redirecting to landing-matches lobby");
+          router.replace("/(jobseeker)/jobseeker/landing-matches");
+          return;
 
           // ====== DECISION TREE FOR SUBSCRIPTION HANDLING ======
           
@@ -254,7 +260,7 @@ export default function JobSeekerLogin() {
                 ]
               );
             } else {
-              // Normal login - proceed to home
+              // Normal login
               router.replace("/jobseeker/home");
             }
             return;

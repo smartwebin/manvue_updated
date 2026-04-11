@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { Alert, AppState } from 'react-native';
-import apiService from './apiService';
+import { useEffect, useState } from "react";
+import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { Alert, AppState } from "react-native";
+import apiService from "./apiService";
 
 /**
  * Subscription Monitor Hook
@@ -24,7 +24,7 @@ class SubscriptionMonitor {
   // Start monitoring subscription
   startMonitoring() {
     if (__DEV__) {
-      console.log('📡 Subscription monitoring started');
+      console.log("📡 Subscription monitoring started");
     }
 
     // Check immediately on start
@@ -36,12 +36,15 @@ class SubscriptionMonitor {
     }, CHECK_INTERVAL);
 
     // Listen for app state changes (foreground/background)
-    this.appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active' && CHECK_ON_FOREGROUND) {
-        // App came to foreground - check subscription
-        this.checkSubscriptionStatus();
-      }
-    });
+    this.appStateSubscription = AppState.addEventListener(
+      "change",
+      (nextAppState) => {
+        if (nextAppState === "active" && CHECK_ON_FOREGROUND) {
+          // App came to foreground - check subscription
+          this.checkSubscriptionStatus();
+        }
+      },
+    );
   }
 
   // Stop monitoring
@@ -57,7 +60,7 @@ class SubscriptionMonitor {
     }
 
     if (__DEV__) {
-      console.log('📡 Subscription monitoring stopped');
+      console.log("📡 Subscription monitoring stopped");
     }
   }
 
@@ -70,7 +73,8 @@ class SubscriptionMonitor {
 
     // Rate limiting - don't check too frequently
     const now = Date.now();
-    if (now - lastCheckTime < 60000) { // At least 1 minute between checks
+    if (now - lastCheckTime < 60000) {
+      // At least 1 minute between checks
       return;
     }
 
@@ -79,16 +83,17 @@ class SubscriptionMonitor {
       lastCheckTime = now;
 
       // Get user data
-      const userId = await SecureStore.getItemAsync('user_id');
-      const userType = await SecureStore.getItemAsync('user_type');
+      const userId = await SecureStore.getItemAsync("user_id");
+      const userType = await SecureStore.getItemAsync("user_type");
+      const userStatus = await SecureStore.getItemAsync("user_status");
 
-      if (!userId || userType !== 'jobseeker') {
+      if (!userId || userType !== "jobseeker") {
         // Only check for jobseekers
         return;
       }
 
       if (__DEV__) {
-        console.log('🔍 Checking subscription status for user:', userId);
+        console.log("🔍 Checking subscription status for user:", userId);
       }
 
       // Call API to check subscription
@@ -98,28 +103,32 @@ class SubscriptionMonitor {
         const { subscription } = response.data;
 
         if (__DEV__) {
-          console.log('📊 Subscription status:', subscription);
+          console.log("📊 Subscription status:", subscription);
         }
 
         // Check if subscription is expired or inactive
-        if (!subscription.has_active_subscription || 
-            subscription.is_expired || 
-            subscription.needs_renewal ||
-            subscription.subscription_status !== 'active') {
-
+        if (
+          !subscription.has_active_subscription ||
+          subscription.is_expired ||
+          subscription.needs_renewal ||
+          subscription.subscription_status !== "active"
+        ) {
           if (__DEV__) {
-            console.log('⚠️ Subscription not active, showing alert');
+            console.log("⚠️ Subscription not active, showing alert");
           }
 
           this.handleExpiredSubscription(subscription);
-        } 
+        }
         // Check if expiring soon (within 3 days)
-        else if (subscription.days_remaining > 0 && subscription.days_remaining <= 3) {
+        else if (
+          subscription.days_remaining > 0 &&
+          subscription.days_remaining <= 3
+        ) {
           this.handleExpiringSoon(subscription);
         }
       }
     } catch (error) {
-      console.error('❌ Error checking subscription:', error);
+      console.error("❌ Error checking subscription:", error);
       // Don't interrupt user experience for check errors
     } finally {
       this.isChecking = false;
@@ -131,27 +140,27 @@ class SubscriptionMonitor {
     // Stop monitoring to prevent multiple alerts
     this.stopMonitoring();
 
-    const expiryDate = subscription.end_date || 'recently';
-    const message = subscription.is_expired 
+    const expiryDate = subscription.end_date || "recently";
+    const message = subscription.is_expired
       ? `Your subscription expired on ${expiryDate}. Please renew to continue using ManVue.`
       : `Your subscription is ${subscription.subscription_status}. Please renew to continue.`;
 
     Alert.alert(
-      'Subscription Required',
+      "Subscription Required",
       message,
       [
         {
-          text: 'Renew Now',
+          text: "Renew Now",
           onPress: async () => {
             // Log out and redirect to payment
             await this.handleLogout();
-            router.replace('/payment-existing');
+            router.replace("/payment-existing");
           },
         },
       ],
-      { 
-        cancelable: false // User must renew
-      }
+      {
+        cancelable: false, // User must renew
+      },
     );
   }
 
@@ -159,7 +168,7 @@ class SubscriptionMonitor {
   handleExpiringSoon(subscription) {
     // Only show this warning once per session
     const warningShown = global.expiryWarningShown || false;
-    
+
     if (warningShown) {
       return;
     }
@@ -167,20 +176,20 @@ class SubscriptionMonitor {
     global.expiryWarningShown = true;
 
     Alert.alert(
-      'Subscription Expiring Soon',
-      `Your subscription will expire in ${subscription.days_remaining} day${subscription.days_remaining > 1 ? 's' : ''}. Consider renewing to avoid interruption.`,
+      "Subscription Expiring Soon",
+      `Your subscription will expire in ${subscription.days_remaining} day${subscription.days_remaining > 1 ? "s" : ""}. Consider renewing to avoid interruption.`,
       [
         {
-          text: 'Remind Me Later',
-          style: 'cancel',
+          text: "Remind Me Later",
+          style: "cancel",
         },
         {
-          text: 'Renew Now',
+          text: "Renew Now",
           onPress: () => {
-            router.push('/payment-existing');
+            router.push("/payment-existing");
           },
         },
-      ]
+      ],
     );
   }
 
@@ -188,17 +197,17 @@ class SubscriptionMonitor {
   async handleLogout() {
     try {
       // Clear all stored data
-      await SecureStore.deleteItemAsync('user_id');
-      await SecureStore.deleteItemAsync('user_type');
-      await SecureStore.deleteItemAsync('token');
-      await SecureStore.deleteItemAsync('company_id');
-      await SecureStore.deleteItemAsync('device_push_token');
+      await SecureStore.deleteItemAsync("user_id");
+      await SecureStore.deleteItemAsync("user_type");
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("company_id");
+      await SecureStore.deleteItemAsync("device_push_token");
 
       if (__DEV__) {
-        console.log('🚪 User logged out due to expired subscription');
+        console.log("🚪 User logged out due to expired subscription");
       }
     } catch (error) {
-      console.error('❌ Error during logout:', error);
+      console.error("❌ Error during logout:", error);
     }
   }
 }
@@ -213,9 +222,9 @@ export const useSubscriptionMonitor = () => {
 
   useEffect(() => {
     const startMonitoring = async () => {
-      const userType = await SecureStore.getItemAsync('user_type');
-      
-      if (userType === 'jobseeker') {
+      const userType = await SecureStore.getItemAsync("user_type");
+
+      if (userType === "jobseeker") {
         subscriptionMonitor.startMonitoring();
         setIsMonitoring(true);
       }
