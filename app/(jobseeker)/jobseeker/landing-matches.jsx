@@ -37,12 +37,17 @@ export default function LandingMatchesScreen() {
 
   const loadInitialData = async () => {
     try {
-      const [id, name] = await Promise.all([
+      const [id, firstName, lastName] = await Promise.all([
         SecureStore.getItemAsync("user_id"),
-        SecureStore.getItemAsync("user_name"),
+        SecureStore.getItemAsync("user_first_name"),
+        SecureStore.getItemAsync("user_last_name"),
       ]);
+
       setUserId(id);
-      setUserName(name || "Jobseeker");
+
+      // Build clean name
+      const fullName = `${firstName || ""} ${lastName || ""}`.trim();
+      setUserName(fullName);
       if (id) {
         fetchMatches(id);
       }

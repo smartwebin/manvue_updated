@@ -1,10 +1,10 @@
 // API Configuration for Manvue App
 export const API_CONFIG = {
-  // Base URLs
-  BASE_URL: "https://www.manvue.in/api",
-  BASE_IMG_URL: "https://www.manvue.in/photos",
-  // BASE_URL: "https://work.phpwebsites.in//manvue/api",
-  // BASE_IMG_URL: "https://work.phpwebsites.in//manvue/photos",
+  // // Base URLs
+  // BASE_URL: "https://www.manvue.in/api",
+  // BASE_IMG_URL: "https://www.manvue.in/photos",
+  BASE_URL: "https://work.phpwebsites.in//manvue/api",
+  BASE_IMG_URL: "https://work.phpwebsites.in//manvue/photos",
 
   // API Endpoints
   ENDPOINTS: {
