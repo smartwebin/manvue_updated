@@ -66,7 +66,7 @@ export default function JobSeekerLogin() {
           duration: 3500,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, []);
 
@@ -95,7 +95,7 @@ export default function JobSeekerLogin() {
       } else {
         if (
           !/^[+]?[1-9][\d]{9,14}$/.test(
-            formData.emailOrMobile.replace(/\s/g, "")
+            formData.emailOrMobile.replace(/\s/g, ""),
           )
         ) {
           newErrors.emailOrMobile = "Please enter a valid mobile number";
@@ -148,7 +148,7 @@ export default function JobSeekerLogin() {
 
           // Fetch subscription data
           const subscription = response.data?.subscription;
-          
+
           // ====== NEW PAID-FIRST ACCESS FLOW ======
           // Priority 1: Check if jobseeker has an active subscription
           if (subscription?.has_active_subscription === true) {
@@ -158,12 +158,14 @@ export default function JobSeekerLogin() {
           }
 
           // Priority 2: Fallback for all unpaid users (Redirect to Lobby)
-          console.log("💳 No active subscription, redirecting to landing-matches lobby");
+          console.log(
+            "💳 No active subscription, redirecting to landing-matches lobby",
+          );
           router.replace("/(jobseeker)/jobseeker/landing-matches");
           return;
 
           // ====== DECISION TREE FOR SUBSCRIPTION HANDLING ======
-          
+
           // 1. First-time user (never had subscription)
           if (subscription.is_first_time === true) {
             if (__DEV__) {
@@ -174,11 +176,14 @@ export default function JobSeekerLogin() {
           }
 
           // 2. Expired subscription
-          if (subscription.is_expired === true || subscription.needs_renewal === true) {
+          if (
+            subscription.is_expired === true ||
+            subscription.needs_renewal === true
+          ) {
             if (__DEV__) {
               console.log("⏰ Subscription expired, showing renewal prompt");
             }
-            
+
             Alert.alert(
               "Subscription Expired",
               `Your subscription expired on ${subscription.end_date}. Please renew to continue using ManVue.`,
@@ -189,28 +194,36 @@ export default function JobSeekerLogin() {
                     router.replace("/payment-existing");
                   },
                 },
-                
               ],
-              { cancelable: false }
+              { cancelable: false },
             );
             return;
           }
 
           // 3. Invalid subscription status
-          if (subscription.subscription_status && !['active', 'none'].includes(subscription.subscription_status)) {
+          if (
+            subscription.subscription_status &&
+            !["active", "none"].includes(subscription.subscription_status)
+          ) {
             if (__DEV__) {
-              console.log("💳 Invalid subscription status:", subscription.subscription_status);
+              console.log(
+                "💳 Invalid subscription status:",
+                subscription.subscription_status,
+              );
             }
-            
+
             const statusMessages = {
-              'payment_pending': 'Your payment is pending. Please complete payment.',
-              'payment_failed': 'Your previous payment failed. Please try again.',
-              'cancelled': 'Your subscription was cancelled. Please renew to continue.',
-              'paused': 'Your subscription is paused. Please contact support.',
+              payment_pending:
+                "Your payment is pending. Please complete payment.",
+              payment_failed: "Your previous payment failed. Please try again.",
+              cancelled:
+                "Your subscription was cancelled. Please renew to continue.",
+              paused: "Your subscription is paused. Please contact support.",
             };
 
-            const message = statusMessages[subscription.subscription_status] || 
-                          'Your subscription is not active. Please renew.';
+            const message =
+              statusMessages[subscription.subscription_status] ||
+              "Your subscription is not active. Please renew.";
 
             Alert.alert(
               "Subscription Required",
@@ -223,7 +236,7 @@ export default function JobSeekerLogin() {
                   },
                 },
               ],
-              { cancelable: false }
+              { cancelable: false },
             );
             return;
           }
@@ -231,18 +244,26 @@ export default function JobSeekerLogin() {
           // 4. Active subscription - check days remaining
           if (subscription.has_active_subscription === true) {
             if (__DEV__) {
-              console.log("✅ Active subscription found, days remaining:", subscription.days_remaining);
+              console.log(
+                "✅ Active subscription found, days remaining:",
+                subscription.days_remaining,
+              );
             }
-            
+
             // Show warning if expiring within 7 days
-            if (subscription.days_remaining > 0 && subscription.days_remaining <= 7) {
+            if (
+              subscription.days_remaining > 0 &&
+              subscription.days_remaining <= 7
+            ) {
               if (__DEV__) {
-                console.log(`⚠️ Subscription expiring soon: ${subscription.days_remaining} days`);
+                console.log(
+                  `⚠️ Subscription expiring soon: ${subscription.days_remaining} days`,
+                );
               }
-              
+
               Alert.alert(
                 "Subscription Expiring Soon",
-                `Your subscription will expire in ${subscription.days_remaining} day${subscription.days_remaining > 1 ? 's' : ''}. Consider renewing to avoid interruption.`,
+                `Your subscription will expire in ${subscription.days_remaining} day${subscription.days_remaining > 1 ? "s" : ""}. Consider renewing to avoid interruption.`,
                 [
                   {
                     text: "Remind Me Later",
@@ -257,7 +278,7 @@ export default function JobSeekerLogin() {
                       router.replace("/payment-existing");
                     },
                   },
-                ]
+                ],
               );
             } else {
               // Normal login
@@ -271,7 +292,6 @@ export default function JobSeekerLogin() {
             console.log("❌ No active subscription - fallback redirect");
           }
           router.replace("/payment-existing");
-
         } else {
           // Handle login failure - display exact errors from API
           if (
@@ -285,14 +305,14 @@ export default function JobSeekerLogin() {
             setLoginError(response.message);
           } else {
             setLoginError(
-              "Invalid credentials. Please check your email/phone and password."
+              "Invalid credentials. Please check your email/phone and password.",
             );
           }
         }
       } catch (error) {
         console.error("Login error:", error);
         setLoginError(
-          "Network error. Please check your internet connection and try again."
+          "Network error. Please check your internet connection and try again.",
         );
       } finally {
         setIsLoading(false);
@@ -401,7 +421,7 @@ export default function JobSeekerLogin() {
               />
             </TouchableOpacity>
           )}
-          
+
           <Animated.View
             style={{
               opacity: fadeAnim,

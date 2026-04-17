@@ -50,19 +50,12 @@ export default function Index() {
 
         if (userType && userId) {
           if (userType === "jobseeker") {
-            // Check if jobseeker is pending approval (inactive)
-            if (userStatus === "inactive") {
-              console.log("⏳ Profile pending approval, redirecting to landing-matches");
-              router.replace("/(jobseeker)/jobseeker/landing-matches");
-              return;
-            }
-
             // Check if jobseeker has paid subscription
             const hasPaidSubscription = subscriptionStatus === "active";
 
             if (!hasPaidSubscription) {
-              console.log("💳 No active subscription, redirecting to payment");
-              router.replace("/payment-existing");
+              console.log("💳 No active subscription, redirecting to lobby");
+              router.replace("/(jobseeker)/jobseeker/landing-matches");
             } else {
               console.log("🏠 Redirecting logged-in job seeker to home");
               router.replace("/jobseeker/home");

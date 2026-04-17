@@ -6,7 +6,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, usePathname } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function JobSeekerLayout() {
   const pathname = usePathname();
@@ -21,7 +28,7 @@ export default function JobSeekerLayout() {
 
   // Get notification count with real-time updates
   const { count: notificationCount, isLoading: isLoadingCount, refetch: refetchCount } = useNotificationCount({ 
-    enabled: userStatus === "active" 
+    enabled: subscriptionStatus === "active" 
   });
   const [userStatus, setUserStatus] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -37,7 +44,7 @@ export default function JobSeekerLayout() {
     try {
       const [status, subStatus] = await Promise.all([
         SecureStore.getItemAsync("user_status"),
-        SecureStore.getItemAsync("subscription_status")
+        SecureStore.getItemAsync("subscription_status"),
       ]);
       setUserStatus(status);
       setSubscriptionStatus(subStatus);
@@ -50,7 +57,7 @@ export default function JobSeekerLayout() {
 
   // 🛡️ Safe Browsing Guard - Access control based on subscription status
   useEffect(() => {
-    if (!isReady || !userStatus) return;
+    if (!isReady || !userStatus || subscriptionStatus === null) return;
 
     const isLandingMatches = pathname.includes("/landing-matches");
     const isJobDetailsV2 = pathname.includes("/job-details-v2");
@@ -63,10 +70,15 @@ export default function JobSeekerLayout() {
       }
     } else {
       // Unpaid users (even if admin-approved) are restricted to landing-matches
-      const isAllowedPage = isLandingMatches || isJobDetailsV2 || pathname.includes("/payment");
-      
+      const isAllowedPage =
+        isLandingMatches || isJobDetailsV2 || pathname.includes("/payment");
+
       if (!isAllowedPage) {
-        console.log("🛡️ Unpaid user blocked from", pathname, "- redirecting to landing-matches");
+        console.log(
+          "🛡️ Unpaid user blocked from",
+          pathname,
+          "- redirecting to landing-matches",
+        );
         router.replace("/(jobseeker)/jobseeker/landing-matches");
       }
     }
@@ -74,7 +86,10 @@ export default function JobSeekerLayout() {
 
   // Refetch notification count when pathname changes (navigating back from notifications)
   useEffect(() => {
-    if (pathname.includes('/jobseeker/') && !pathname.includes('/notifications')) {
+    if (
+      pathname.includes("/jobseeker/") &&
+      !pathname.includes("/notifications")
+    ) {
       refetchCount();
     }
   }, [pathname]);
@@ -82,7 +97,7 @@ export default function JobSeekerLayout() {
   // Log subscription monitoring status (development only)
   useEffect(() => {
     if (isMonitoring && __DEV__) {
-      console.log('✅ Subscription monitoring is active for this session');
+      console.log("✅ Subscription monitoring is active for this session");
     }
   }, [isMonitoring]);
 
@@ -92,7 +107,7 @@ export default function JobSeekerLayout() {
       if (userDataJson) {
         const userData = JSON.parse(userDataJson);
         setUserProfile({
-          name: `${userData.first_name || 'User'} ${userData.last_name || ''}`.trim(),
+          name: `${userData.first_name || "User"} ${userData.last_name || ""}`.trim(),
           user_id: userData.user_id,
         });
       }
@@ -207,8 +222,8 @@ export default function JobSeekerLayout() {
           gap: theme.spacing.sm,
         }}
       >
-        {/* Notifications - Only show for active users */}
-        {userStatus === "active" && (
+        {/* Notifications - Only show for paid users */}
+        {subscriptionStatus === "active" && (
           <TouchableOpacity
             onPress={() => {
               router.push("/(jobseeker)/(others)/notifications");
@@ -228,7 +243,7 @@ export default function JobSeekerLayout() {
               size={20}
               color={theme.colors.primary.teal}
             />
-            
+
             {/* Notification badge with count */}
             {isLoadingCount ? (
               <View
@@ -304,7 +319,7 @@ export default function JobSeekerLayout() {
         label: "Interviews",
         route: "/jobseeker/interviews",
       },
-      
+
       {
         id: "matches",
         icon: "heart",
@@ -372,6 +387,30 @@ export default function JobSeekerLayout() {
     );
   };
 
+  if (!isReady || subscriptionStatus === null) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background.primary,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary.teal} />
+        <Text
+          style={{
+            marginTop: 15,
+            color: theme.colors.text.secondary,
+            fontFamily: theme.typography.fonts.medium,
+          }}
+        >
+          Verifying access...
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <>
       <StatusBar
@@ -383,7 +422,7 @@ export default function JobSeekerLayout() {
         style={{ flex: 1, backgroundColor: theme.colors.background.primary }}
       >
         <SafeAreaWrapper>
-          <Header />
+          {!pathname.includes("/landing-matches") && <Header />}
 
           <View style={{ flex: 1 }}>
             <Stack screenOptions={{ headerShown: false }}>
@@ -396,8 +435,8 @@ export default function JobSeekerLayout() {
             </Stack>
           </View>
 
-          {/* Hide Bottom Tabs for inactive users */}
-          {userStatus === "active" && <BottomTabs />}
+          {/* Hide Bottom Tabs for unpaid users */}
+          {subscriptionStatus === "active" && <BottomTabs />}
         </SafeAreaWrapper>
       </View>
     </>

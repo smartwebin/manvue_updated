@@ -398,28 +398,51 @@ export default function LandingMatchesScreen() {
           </TouchableOpacity>
         </View>
 
-        <LinearGradient
-          colors={[theme.colors.primary.teal, theme.colors.secondary.darkTeal]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            borderRadius: 12,
-            padding: 12,
-            marginTop: 10,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
+        <TouchableOpacity 
+          activeOpacity={0.9}
+          onPress={() => router.push("/(auth)/payment-existing")}
         >
-          <Ionicons name="time-outline" size={20} color="white" />
-          <View style={{ marginLeft: 10 }}>
-            <Text style={{ color: "white", fontWeight: "bold", fontSize: 14 }}>
-              Premium Matches Preview
-            </Text>
-            <Text style={{ color: "rgba(255, 255, 255, 0.8)", fontSize: 11 }}>
-              Upgrade to Premium to apply and unlock full features.
-            </Text>
-          </View>
-        </LinearGradient>
+          <LinearGradient
+            colors={[theme.colors.primary.teal, theme.colors.secondary.darkTeal]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              borderRadius: 15,
+              padding: 15,
+              marginTop: 15,
+              flexDirection: "row",
+              alignItems: "center", // Vertically center everything
+              ...theme.shadows.md
+            }}
+          >
+            <View style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+              padding: 8, 
+              borderRadius: 10,
+            }}>
+              <Ionicons name="sparkles" size={20} color="white" />
+            </View>
+
+            <View style={{ flex: 1, marginLeft: 12, paddingRight: 10 }}>
+              <Text style={{ 
+                color: "white", 
+                fontWeight: "bold", 
+                fontSize: 15,
+              }}>
+                Premium Matches Preview
+              </Text>
+              <Text style={{ 
+                color: "rgba(255, 255, 255, 0.9)", 
+                fontSize: 12,
+                marginTop: 2
+              }}>
+                Upgrade to Premium to apply and unlock full features.
+              </Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={20} color="white" />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -464,17 +487,61 @@ export default function LandingMatchesScreen() {
             </View>
           )}
           ListEmptyComponent={() => (
-            <View style={{ flex: 1, alignItems: "center", marginTop: 50 }}>
-              <Ionicons
-                name="search-outline"
-                size={60}
-                color={theme.colors.border.light}
-              />
+            <View style={{ flex: 1, alignItems: "center", marginTop: 50, paddingHorizontal: theme.spacing.xl * 2 }}>
+              <View style={{ 
+                width: 100, 
+                height: 100, 
+                borderRadius: 50, 
+                backgroundColor: 'rgba(27, 163, 163, 0.05)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 20
+              }}>
+                <Ionicons
+                  name="search-outline"
+                  size={50}
+                  color={theme.colors.primary.teal}
+                />
+              </View>
               <Text
-                style={{ marginTop: 10, color: theme.colors.text.secondary }}
+                style={{ 
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: theme.colors.text.primary,
+                  textAlign: 'center'
+                }}
               >
-                No matches found yet.
+                No matches found yet
               </Text>
+              <Text
+                style={{ 
+                  marginTop: 8, 
+                  color: theme.colors.text.secondary,
+                  textAlign: 'center',
+                  lineHeight: 20
+                }}
+              >
+                Upgrade to Premium to explore all jobs, use advanced filters, and get priority visibility!
+              </Text>
+              
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/payment-existing")}
+                style={{
+                  marginTop: 24,
+                  backgroundColor: theme.colors.primary.teal,
+                  paddingHorizontal: 40,
+                  paddingVertical: 16,
+                  borderRadius: 15,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  ...theme.shadows.lg
+                }}
+              >
+                <Ionicons name="card-outline" size={20} color="white" style={{ marginRight: 10 }} />
+                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>
+                  Upgrade to Premium Now
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
         />

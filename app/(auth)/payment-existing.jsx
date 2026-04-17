@@ -222,7 +222,10 @@ export default function PaymentExistingScreen() {
             {
               text: 'Get Started',
               onPress: () => {
-                router.replace('/jobseeker/home');
+                // Add a small delay to ensure SecureStore is fully synced before redirecting
+                setTimeout(() => {
+                  router.replace('/jobseeker/home');
+                }, 500);
               },
             },
           ],

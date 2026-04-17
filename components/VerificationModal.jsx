@@ -4,7 +4,7 @@ import theme from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -31,8 +31,8 @@ export default function VerificationModal({
   onVerified,
   onClose,
 }) {
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verificationError, setVerificationError] = useState('');
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationError, setVerificationError] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResendingCode, setIsResendingCode] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -52,8 +52,8 @@ export default function VerificationModal({
   // Reset state when modal is closed
   useEffect(() => {
     if (!visible) {
-      setVerificationCode('');
-      setVerificationError('');
+      setVerificationCode("");
+      setVerificationError("");
       setIsVerifying(false);
       setIsResendingCode(false);
     }
@@ -61,66 +61,87 @@ export default function VerificationModal({
 
   const handleVerifyEmail = async () => {
     if (!verificationCode.trim()) {
-      setVerificationError('Please enter the verification code');
+      setVerificationError("Please enter the verification code");
       return;
     }
 
     if (!/^\d{6}$/.test(verificationCode)) {
-      setVerificationError('Verification code must be 6 digits');
+      setVerificationError("Verification code must be 6 digits");
       return;
     }
 
     setIsVerifying(true);
-    setVerificationError('');
+    setVerificationError("");
 
     try {
       const response = await apiService.verifyEmail({
         email: email,
         verification_code: verificationCode,
-        user_type: userType
+        user_type: userType,
       });
 
       if (response.success) {
         // Store user data in SecureStore
         if (response.data?.user_id) {
-          await SecureStore.setItemAsync('user_id', response.data.user_id.toString());
-          console.log('✅ User ID stored in SecureStore:', response.data.user_id);
+          await SecureStore.setItemAsync(
+            "user_id",
+            response.data.user_id.toString(),
+          );
+          console.log(
+            "✅ User ID stored in SecureStore:",
+            response.data.user_id,
+          );
         }
 
         if (response.data?.user_type) {
-          await SecureStore.setItemAsync('user_type', response.data.user_type);
-          console.log('✅ User type stored in SecureStore:', response.data.user_type);
+          await SecureStore.setItemAsync("user_type", response.data.user_type);
+          console.log(
+            "✅ User type stored in SecureStore:",
+            response.data.user_type,
+          );
         }
 
         // Store JWT token in SecureStore for better security
         if (response.token || response.jwt_token) {
           const token = response.token || response.jwt_token;
-          await SecureStore.setItemAsync('jwt_token', token);
-          console.log('✅ JWT token stored in SecureStore');
+          await SecureStore.setItemAsync("jwt_token", token);
+          console.log("✅ JWT token stored in SecureStore");
         }
 
         // Store user email and name for quick access
         if (response.data?.email) {
-          await SecureStore.setItemAsync('user_email', response.data.email);
+          await SecureStore.setItemAsync("user_email", response.data.email);
         }
 
         if (response.data?.first_name) {
-          await SecureStore.setItemAsync('user_first_name', response.data.first_name);
+          await SecureStore.setItemAsync(
+            "user_first_name",
+            response.data.first_name,
+          );
         }
 
         if (response.data?.last_name) {
-          await SecureStore.setItemAsync('user_last_name', response.data.last_name);
+          await SecureStore.setItemAsync(
+            "user_last_name",
+            response.data.last_name,
+          );
         }
         if (response.data?.company?.company_id) {
-          await SecureStore.setItemAsync('company_id', response.data?.company?.company_id);
+          await SecureStore.setItemAsync(
+            "company_id",
+            response.data?.company?.company_id,
+          );
         }
 
         // Store user status
         if (response.data?.status) {
-          await SecureStore.setItemAsync('user_status', response.data.status);
+          await SecureStore.setItemAsync("user_status", response.data.status);
         }
 
-        console.log('✅ Email verified successfully, User ID:', response.data.user_id);
+        console.log(
+          "✅ Email verified successfully, User ID:",
+          response.data.user_id,
+        );
 
         // Call onVerified callback if provided
         if (onVerified) {
@@ -128,23 +149,25 @@ export default function VerificationModal({
         }
 
         // Check if payment is required (jobseekers only)
-        if (response.payment_required === true && userType === 'jobseeker') {
-          console.log('💳 Payment required for jobseeker, redirecting to payment screen');
-          router.replace('/payment');
+        if (response.payment_required === true && userType === "jobseeker") {
+          console.log(
+            "💳 Payment required for jobseeker, redirecting to payment screen",
+          );
+          router.replace("/payment");
         } else {
           // Navigate to appropriate home page based on user type
-          if (userType === 'jobseeker') {
-            router.replace('/jobseeker/home');
-          } else if (userType === 'employer') {
-            router.replace('/employer/home');
+          if (userType === "jobseeker") {
+            router.replace("/jobseeker/home");
+          } else if (userType === "employer") {
+            router.replace("/employer/home");
           }
         }
       } else {
-        setVerificationError(response.message || 'Invalid verification code');
+        setVerificationError(response.message || "Invalid verification code");
       }
     } catch (error) {
-      setVerificationError('Failed to verify email. Please try again.');
-      console.error('Email verification error:', error);
+      setVerificationError("Failed to verify email. Please try again.");
+      console.error("Email verification error:", error);
     } finally {
       setIsVerifying(false);
     }
@@ -156,25 +179,28 @@ export default function VerificationModal({
     }
 
     setIsResendingCode(true);
-    setVerificationError('');
+    setVerificationError("");
 
     try {
       const response = await apiService.resendVerificationCode({
         email: email,
-        user_type: userType
+        user_type: userType,
       });
 
       if (response.success) {
-        Alert.alert('Success', 'Verification code sent successfully! Please check your email.');
+        Alert.alert(
+          "Success",
+          "Verification code sent successfully! Please check your email.",
+        );
         // Start 60 second countdown
         setCountdown(60);
         setCanResend(false);
       } else {
-        setVerificationError(response.message || 'Failed to resend code');
+        setVerificationError(response.message || "Failed to resend code");
       }
     } catch (error) {
-      setVerificationError('Failed to resend code. Please try again.');
-      console.error('Resend code error:', error);
+      setVerificationError("Failed to resend code. Please try again.");
+      console.error("Resend code error:", error);
     } finally {
       setIsResendingCode(false);
     }
@@ -211,7 +237,7 @@ export default function VerificationModal({
             <TouchableOpacity
               onPress={handleClose}
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: theme.spacing.md,
                 right: theme.spacing.md,
                 zIndex: 10,
@@ -228,7 +254,9 @@ export default function VerificationModal({
           )}
 
           {/* Header */}
-          <View style={{ alignItems: "center", marginBottom: theme.spacing.lg }}>
+          <View
+            style={{ alignItems: "center", marginBottom: theme.spacing.lg }}
+          >
             <View
               style={{
                 width: 70,
@@ -288,7 +316,7 @@ export default function VerificationModal({
             value={verificationCode}
             onChangeText={(value) => {
               setVerificationCode(value);
-              setVerificationError('');
+              setVerificationError("");
             }}
             placeholder="Enter 6-digit code"
             keyboardType="number-pad"
@@ -300,7 +328,7 @@ export default function VerificationModal({
           {/* Info Banner */}
           <View
             style={{
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
               borderRadius: theme.borderRadius.md,
               padding: theme.spacing.md,
               marginBottom: theme.spacing.lg,
@@ -313,7 +341,7 @@ export default function VerificationModal({
                 fontSize: theme.typography.sizes.xs,
                 fontFamily: theme.typography.fonts.medium,
                 color: theme.colors.status.info,
-                textAlign: 'center',
+                textAlign: "center",
               }}
             >
               The code will expire in 15 minutes
@@ -378,7 +406,7 @@ export default function VerificationModal({
             style={{
               paddingVertical: theme.spacing.sm,
               alignItems: "center",
-              opacity: (isResendingCode || !canResend || countdown > 0) ? 0.5 : 1,
+              opacity: isResendingCode || !canResend || countdown > 0 ? 0.5 : 1,
             }}
             activeOpacity={0.7}
           >
@@ -391,7 +419,7 @@ export default function VerificationModal({
               }}
             >
               {isResendingCode
-                ? 'Sending...'
+                ? "Sending..."
                 : countdown > 0
                   ? `Resend code in ${countdown}s`
                   : "Didn't receive code? Resend"}
