@@ -43,20 +43,23 @@ export default function LandingMatchesScreen() {
         SecureStore.getItemAsync("user_last_name"),
       ]);
 
-      setUserId(id);
+      if (!id) {
+        setLoading(false);
+        setError("Your session is being verified...");
+        return;
+      }
 
-      // Build clean name
+      setUserId(id);
       const fullName = `${firstName || ""} ${lastName || ""}`.trim();
       setUserName(fullName);
-      if (id) {
-        fetchMatches(id);
-      }
+      fetchMatches(id);
     } catch (err) {
       setError("Session expired. Please log in again.");
     }
   };
 
   const fetchMatches = async (id, isRefresh = false) => {
+    if (!id) return;
     if (!isRefresh) setLoading(true);
     try {
       const response = await apiService.getMatchingJobsV2({

@@ -27,8 +27,10 @@ class SubscriptionMonitor {
       console.log("📡 Subscription monitoring started");
     }
 
-    // Check immediately on start
-    this.checkSubscriptionStatus();
+    // Check immediately on start (with a delay to allow session to stabilize)
+    setTimeout(() => {
+      this.checkSubscriptionStatus();
+    }, 2000);
 
     // Set up periodic checking
     this.checkInterval = setInterval(() => {
@@ -151,9 +153,8 @@ class SubscriptionMonitor {
       [
         {
           text: "Renew Now",
-          onPress: async () => {
-            // Log out and redirect to payment
-            await this.handleLogout();
+          onPress: () => {
+            // Simply redirect to payment without logging out
             router.replace("/payment-existing");
           },
         },
@@ -217,10 +218,12 @@ const subscriptionMonitor = new SubscriptionMonitor();
 export default subscriptionMonitor;
 
 // React Hook for easy usage in components
-export const useSubscriptionMonitor = () => {
+export const useSubscriptionMonitor = (enabled = true) => {
   const [isMonitoring, setIsMonitoring] = useState(false);
 
   useEffect(() => {
+    if (!enabled) return;
+
     const startMonitoring = async () => {
       const userType = await SecureStore.getItemAsync("user_type");
 
@@ -237,7 +240,7 @@ export const useSubscriptionMonitor = () => {
       subscriptionMonitor.stopMonitoring();
       setIsMonitoring(false);
     };
-  }, []);
+  }, [enabled]);
 
   return { isMonitoring };
 };

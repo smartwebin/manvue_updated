@@ -24,15 +24,16 @@ export default function JobSeekerLayout() {
 
   // 🔔 Subscription Monitor - Automatically checks subscription status
   // Checks every 5 minutes and when app comes to foreground
-  const { isMonitoring } = useSubscriptionMonitor();
+  const { isMonitoring } = useSubscriptionMonitor(isReady);
+
+  const [userStatus, setUserStatus] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [isReady, setIsReady] = useState(false);
 
   // Get notification count with real-time updates
   const { count: notificationCount, isLoading: isLoadingCount, refetch: refetchCount } = useNotificationCount({ 
     enabled: subscriptionStatus === "active" 
   });
-  const [userStatus, setUserStatus] = useState(null);
-  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
-  const [isReady, setIsReady] = useState(false);
 
   // Load user profile and status
   useEffect(() => {
@@ -82,7 +83,7 @@ export default function JobSeekerLayout() {
         router.replace("/(jobseeker)/jobseeker/landing-matches");
       }
     }
-  }, [pathname, userStatus, isReady]);
+  }, [pathname, userStatus, isReady, subscriptionStatus]);
 
   // Refetch notification count when pathname changes (navigating back from notifications)
   useEffect(() => {

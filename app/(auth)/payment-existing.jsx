@@ -225,7 +225,7 @@ export default function PaymentExistingScreen() {
                 // Add a small delay to ensure SecureStore is fully synced before redirecting
                 setTimeout(() => {
                   router.replace('/jobseeker/home');
-                }, 500);
+                }, 800);
               },
             },
           ],
