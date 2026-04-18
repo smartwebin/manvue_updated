@@ -7,6 +7,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+
 import {
   Alert,
   Animated,

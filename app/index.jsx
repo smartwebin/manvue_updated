@@ -58,7 +58,7 @@ export default function Index() {
               router.replace("/(jobseeker)/jobseeker/landing-matches");
             } else {
               console.log("🏠 Redirecting logged-in job seeker to home");
-              router.replace("/jobseeker/home");
+              router.replace("/(jobseeker)/jobseeker/home");
             }
           } else if (userType === "employer") {
             console.log("🏢 Redirecting logged-in employer to home");

@@ -22,17 +22,21 @@ export default function JobSeekerLayout() {
     user_id: null,
   });
 
-  // 🔔 Subscription Monitor - Automatically checks subscription status
-  // Checks every 5 minutes and when app comes to foreground
-  const { isMonitoring } = useSubscriptionMonitor(isReady);
-
   const [userStatus, setUserStatus] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [isReady, setIsReady] = useState(false);
 
+  // 🔔 Subscription Monitor - Automatically checks subscription status
+  // Checks every 5 minutes and when app comes to foreground
+  const { isMonitoring } = useSubscriptionMonitor(isReady);
+
   // Get notification count with real-time updates
-  const { count: notificationCount, isLoading: isLoadingCount, refetch: refetchCount } = useNotificationCount({ 
-    enabled: subscriptionStatus === "active" 
+  const {
+    count: notificationCount,
+    isLoading: isLoadingCount,
+    refetch: refetchCount,
+  } = useNotificationCount({
+    enabled: subscriptionStatus === "active",
   });
 
   // Load user profile and status
@@ -47,8 +51,18 @@ export default function JobSeekerLayout() {
         SecureStore.getItemAsync("user_status"),
         SecureStore.getItemAsync("subscription_status"),
       ]);
-      setUserStatus(status || "inactive");
-      setSubscriptionStatus(subStatus || "inactive");
+
+      // Only update state if values changed to prevent unnecessary re-renders
+      if (status !== userStatus || subStatus !== subscriptionStatus) {
+        if (__DEV__) {
+          console.log("🔄 Layout detected status update:", {
+            user: status,
+            sub: subStatus,
+          });
+        }
+        setUserStatus(status || "inactive");
+        setSubscriptionStatus(subStatus || "inactive");
+      }
       setIsReady(true);
     } catch (error) {
       console.error("Error checking user status:", error);
@@ -56,8 +70,20 @@ export default function JobSeekerLayout() {
     }
   };
 
+  // 🔄 Periodic Sync - Ensure layout picks up background monitor updates (Bug #6)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkStatus();
+    }, 3000); // Check every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [userStatus, subscriptionStatus]);
+
   // 🛡️ Safe Browsing Guard - Access control based on subscription status
   useEffect(() => {
+    // Share pathname with the background monitor to prevent alert loops (Bug #9)
+    global.currentPathname = pathname;
+
     if (!isReady || !userStatus || subscriptionStatus === null) return;
 
     const isLandingMatches = pathname.includes("/landing-matches");
@@ -69,7 +95,7 @@ export default function JobSeekerLayout() {
       if (isLandingMatches) {
         console.log("🛡️ Paid user detected - moving to home");
         setTimeout(() => {
-          if (usePathname().includes("/landing-matches")) {
+          if (pathname.includes("/landing-matches")) {
             router.replace("/(jobseeker)/jobseeker/home");
           }
         }, 0);
@@ -86,8 +112,10 @@ export default function JobSeekerLayout() {
           "- moving to landing-matches",
         );
         setTimeout(() => {
-          const currentPath = usePathname();
-          if (!currentPath.includes("/landing-matches") && !currentPath.includes("/payment")) {
+          if (
+            !pathname.includes("/landing-matches") &&
+            !pathname.includes("/payment")
+          ) {
             router.replace("/(jobseeker)/jobseeker/landing-matches");
           }
         }, 0);

@@ -116,17 +116,18 @@ class SubscriptionMonitor {
           subscription.subscription_status !== "active"
         ) {
           if (__DEV__) {
-            console.log("⚠️ Subscription not active, showing alert");
+            console.log("⚠️ Subscription not active, updating SecureStore");
           }
 
+          // Update SecureStore so the Layout can react
+          await SecureStore.setItemAsync("subscription_status", "inactive");
+          await SecureStore.setItemAsync("user_status", "inactive");
+
           this.handleExpiredSubscription(subscription);
-        }
-        // Check if expiring soon (within 3 days)
-        else if (
-          subscription.days_remaining > 0 &&
-          subscription.days_remaining <= 3
-        ) {
-          this.handleExpiringSoon(subscription);
+        } else {
+          // Verify it's active
+          await SecureStore.setItemAsync("subscription_status", "active");
+          await SecureStore.setItemAsync("user_status", "active");
         }
       }
     } catch (error) {
@@ -147,20 +148,26 @@ class SubscriptionMonitor {
       ? `Your subscription expired on ${expiryDate}. Please renew to continue using ManVue.`
       : `Your subscription is ${subscription.subscription_status}. Please renew to continue.`;
 
+    // 🛡️ Bug #9: Don't show alert if already on landing-matches (Lobby)
+    // This prevents the loop on the Lobby screen.
+    if (global.currentPathname?.includes("/landing-matches")) {
+      return;
+    }
+
     Alert.alert(
       "Subscription Required",
       message,
       [
         {
-          text: "Renew Now",
+          text: "View Plans",
           onPress: () => {
-            // Simply redirect to payment without logging out
-            router.replace("/payment-existing");
+            // We just trigger an alert. The Layout Guard will handle the 
+            // literal screen movement once SecureStore is updated above.
           },
         },
       ],
       {
-        cancelable: false, // User must renew
+        cancelable: true,
       },
     );
   }
@@ -187,7 +194,7 @@ class SubscriptionMonitor {
         {
           text: "Renew Now",
           onPress: () => {
-            router.push("/payment-existing");
+            router.push("/(auth)/payment-existing");
           },
         },
       ],
@@ -200,7 +207,7 @@ class SubscriptionMonitor {
       // Clear all stored data
       await SecureStore.deleteItemAsync("user_id");
       await SecureStore.deleteItemAsync("user_type");
-      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("jwt_token");
       await SecureStore.deleteItemAsync("company_id");
       await SecureStore.deleteItemAsync("device_push_token");
 
