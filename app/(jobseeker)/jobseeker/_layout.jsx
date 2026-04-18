@@ -46,8 +46,8 @@ export default function JobSeekerLayout() {
         SecureStore.getItemAsync("user_status"),
         SecureStore.getItemAsync("subscription_status"),
       ]);
-      setUserStatus(status);
-      setSubscriptionStatus(subStatus);
+      setUserStatus(status || "inactive");
+      setSubscriptionStatus(subStatus || "inactive");
       setIsReady(true);
     } catch (error) {
       console.error("Error checking user status:", error);
@@ -387,7 +387,7 @@ export default function JobSeekerLayout() {
     );
   };
 
-  if (!isReady || subscriptionStatus === null) {
+  if (!isReady) {
     return (
       <View
         style={{

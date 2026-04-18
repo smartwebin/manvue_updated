@@ -656,10 +656,11 @@ export default function Signup() {
           );
         }
 
-        // Store user status
+        // Store user status and initialize subscription status
         if (response.data?.status) {
           await SecureStore.setItemAsync("user_status", response.data.status);
         }
+        await SecureStore.setItemAsync("subscription_status", "inactive");
 
         console.log("✅ Signup successful, User ID:", response.data.user_id);
 
