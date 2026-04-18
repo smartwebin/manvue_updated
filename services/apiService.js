@@ -1540,6 +1540,8 @@ class ApiService {
         SecureStore.deleteItemAsync("subscription_status"),
         SecureStore.deleteItemAsync("subscription_id"),
         SecureStore.deleteItemAsync("subscription_end_date"),
+        SecureStore.deleteItemAsync("login_type"), // Legacy
+        SecureStore.deleteItemAsync("user_role"), // Legacy
       ]);
 
       // Clear company data (for employers)

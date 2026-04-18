@@ -23,6 +23,7 @@ export default function JobSeekerHome() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
   const [jobseekerId, setJobseekerId] = useState(null);
+  const [userStatus, setUserStatus] = useState("inactive");
   const [error, setError] = useState(null);
 
   // Matching Jobs data
@@ -58,6 +59,9 @@ export default function JobSeekerHome() {
     try {
       setError(null);
       const userId = await SecureStore.getItemAsync("user_id");
+      const status = await SecureStore.getItemAsync("user_status");
+
+      if (status) setUserStatus(status);
 
       if (!userId) {
         setError("Session error. Please log in.");
@@ -797,6 +801,11 @@ export default function JobSeekerHome() {
   const createFlatListData = () => {
     const data = [{ type: "stats", id: "stats" }];
 
+    // Add status banner if pending approval
+    if (userStatus === "inactive") {
+      data.push({ type: "approval-banner", id: "approval-banner" });
+    }
+
     // Add matching jobs section
     data.push({ type: "jobs-header", id: "jobs-header" });
 
@@ -816,6 +825,51 @@ export default function JobSeekerHome() {
     switch (item.type) {
       case "stats":
         return <StatsCards />;
+
+      case "approval-banner":
+        return (
+          <View
+            style={{
+              marginHorizontal: theme.spacing.lg,
+              marginTop: theme.spacing.md,
+              backgroundColor: "rgba(249, 115, 22, 0.1)",
+              borderRadius: theme.borderRadius.lg,
+              padding: theme.spacing.md,
+              borderLeftWidth: 4,
+              borderLeftColor: theme.colors.primary.orange,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Ionicons
+              name="time-outline"
+              size={24}
+              color={theme.colors.primary.orange}
+              style={{ marginRight: theme.spacing.md }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: theme.typography.sizes.sm,
+                  fontFamily: theme.typography.fonts.bold,
+                  color: theme.colors.primary.orange,
+                  marginBottom: 2,
+                }}
+              >
+                Awaiting Admin Approval
+              </Text>
+              <Text
+                style={{
+                  fontSize: theme.typography.sizes.xs,
+                  fontFamily: theme.typography.fonts.medium,
+                  color: theme.colors.text.secondary,
+                }}
+              >
+                Your payment was successful! Our team is reviewing your profile.
+              </Text>
+            </View>
+          </View>
+        );
 
       case "jobs-header":
         return (

@@ -28,6 +28,7 @@ export default function LandingMatchesScreen() {
   const [jobs, setJobs] = useState([]);
   const [userId, setUserId] = useState(null);
   const [userName, setUserName] = useState("");
+  const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
   const [error, setError] = useState(null);
   const [fadeAnim] = useState(new Animated.Value(0));
 
@@ -37,10 +38,11 @@ export default function LandingMatchesScreen() {
 
   const loadInitialData = async () => {
     try {
-      const [id, firstName, lastName] = await Promise.all([
+      const [id, firstName, lastName, status] = await Promise.all([
         SecureStore.getItemAsync("user_id"),
         SecureStore.getItemAsync("user_first_name"),
         SecureStore.getItemAsync("user_last_name"),
+        SecureStore.getItemAsync("subscription_status"),
       ]);
 
       if (!id) {
@@ -52,8 +54,11 @@ export default function LandingMatchesScreen() {
       setUserId(id);
       const fullName = `${firstName || ""} ${lastName || ""}`.trim();
       setUserName(fullName);
+      if (status) setSubscriptionStatus(status);
       fetchMatches(id);
     } catch (err) {
+      console.error("Initialization error:", err);
+      setLoading(false);
       setError("Session expired. Please log in again.");
     }
   };
@@ -381,10 +386,13 @@ export default function LandingMatchesScreen() {
               borderColor: "rgba(255, 59, 48, 0.2)",
             }}
             onPress={async () => {
-              await SecureStore.deleteItemAsync("user_id");
-              await SecureStore.deleteItemAsync("jwt_token");
-              await SecureStore.deleteItemAsync("user_status");
-              router.replace("/(auth)/signin");
+              try {
+                await apiService.logout();
+                router.replace("/choose-path");
+              } catch (error) {
+                console.log("Lobby logout error:", error);
+                router.replace("/choose-path");
+              }
             }}
           >
             <Ionicons
@@ -403,10 +411,18 @@ export default function LandingMatchesScreen() {
 
         <TouchableOpacity 
           activeOpacity={0.9}
-          onPress={() => router.push("/(auth)/payment-existing")}
+          onPress={() => {
+            if (subscriptionStatus !== "active") {
+              router.push("/(auth)/payment-existing");
+            }
+          }}
         >
           <LinearGradient
-            colors={[theme.colors.primary.teal, theme.colors.secondary.darkTeal]}
+            colors={
+              subscriptionStatus === "active"
+                ? [theme.colors.primary.orange, "#E67E22"]
+                : [theme.colors.primary.teal, theme.colors.secondary.darkTeal]
+            }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
@@ -423,7 +439,11 @@ export default function LandingMatchesScreen() {
               padding: 8, 
               borderRadius: 10,
             }}>
-              <Ionicons name="sparkles" size={20} color="white" />
+              <Ionicons 
+                name={subscriptionStatus === "active" ? "time" : "sparkles"} 
+                size={20} 
+                color="white" 
+              />
             </View>
 
             <View style={{ flex: 1, marginLeft: 12, paddingRight: 10 }}>
@@ -432,18 +452,24 @@ export default function LandingMatchesScreen() {
                 fontWeight: "bold", 
                 fontSize: 15,
               }}>
-                Premium Matches Preview
+                {subscriptionStatus === "active" 
+                  ? "Profile Under Review" 
+                  : "Premium Matches Preview"}
               </Text>
               <Text style={{ 
                 color: "rgba(255, 255, 255, 0.9)", 
                 fontSize: 12,
                 marginTop: 2
               }}>
-                Upgrade to Premium to apply and unlock full features.
+                {subscriptionStatus === "active" 
+                  ? "Your payment is successful. Access will be granted shortly." 
+                  : "Upgrade to Premium to apply and unlock full features."}
               </Text>
             </View>
 
-            <Ionicons name="chevron-forward" size={20} color="white" />
+            {subscriptionStatus !== "active" && (
+              <Ionicons name="chevron-forward" size={20} color="white" />
+            )}
           </LinearGradient>
         </TouchableOpacity>
       </View>

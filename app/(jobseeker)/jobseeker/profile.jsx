@@ -129,7 +129,7 @@ export default function Profile() {
       if (!permissionResult.granted) {
         Alert.alert(
           "Permission Required",
-          "Permission to access photos is required to upload your profile picture."
+          "Permission to access photos is required to upload your profile picture.",
         );
         return;
       }
@@ -216,7 +216,7 @@ export default function Profile() {
     let totalScore = 0;
     const maxScore = Object.values(fields).reduce(
       (sum, weight) => sum + weight,
-      0
+      0,
     );
 
     Object.entries(fields).forEach(([field, weight]) => {
@@ -352,7 +352,7 @@ export default function Profile() {
       const response = await apiService.updateProfileField(
         userId,
         field,
-        value
+        value,
       );
 
       if (response.success) {
@@ -387,7 +387,7 @@ export default function Profile() {
 
         if (response.data.location_state && statesToUse.length > 0) {
           const matchedState = statesToUse.find(
-            (s) => s.label === response.data.location_state
+            (s) => s.label === response.data.location_state,
           );
           if (matchedState) {
             setSelectedStateId(matchedState.value);
@@ -441,7 +441,7 @@ export default function Profile() {
       const response = await apiService.updateProfileField(
         userId,
         "education_list",
-        JSON.stringify(educationList)
+        JSON.stringify(educationList),
       );
 
       if (response.success) {
@@ -476,7 +476,7 @@ export default function Profile() {
 
         const response = await apiService.deleteEducation(
           userId,
-          item.education_id
+          item.education_id,
         );
 
         if (response.success) {
@@ -486,7 +486,7 @@ export default function Profile() {
         } else {
           Alert.alert(
             "Error",
-            response.message || "Failed to delete education"
+            response.message || "Failed to delete education",
           );
         }
       } else {
@@ -494,7 +494,7 @@ export default function Profile() {
         const response = await apiService.updateProfileField(
           userId,
           "add_education",
-          JSON.stringify(item)
+          JSON.stringify(item),
         );
 
         if (response.success) {
@@ -526,7 +526,7 @@ export default function Profile() {
 
         const response = await apiService.deleteWork(
           userId,
-          item.experience_id
+          item.experience_id,
         );
 
         if (response.success) {
@@ -536,7 +536,7 @@ export default function Profile() {
         } else {
           Alert.alert(
             "Error",
-            response.message || "Failed to delete work experience"
+            response.message || "Failed to delete work experience",
           );
         }
       } else {
@@ -544,19 +544,21 @@ export default function Profile() {
         const response = await apiService.updateProfileField(
           userId,
           "add_work",
-          JSON.stringify(item)
+          JSON.stringify(item),
         );
 
         if (response.success) {
           console.log(
-            isUpdate ? "✅ Work experience updated" : "✅ Work experience added"
+            isUpdate
+              ? "✅ Work experience updated"
+              : "✅ Work experience added",
           );
           // Reload profile to get updated list with IDs
           await loadProfileData();
         } else {
           Alert.alert(
             "Error",
-            response.message || "Failed to save work experience"
+            response.message || "Failed to save work experience",
           );
         }
       }
@@ -575,7 +577,7 @@ export default function Profile() {
       const response = await apiService.updateProfileField(
         userId,
         "profile_visibility",
-        newVisibility
+        newVisibility,
       );
 
       if (response.success) {
@@ -588,7 +590,7 @@ export default function Profile() {
           "Success",
           `Profile is now ${
             newVisibility === "public" ? "visible to all" : "private"
-          }`
+          }`,
         );
       } else {
         Alert.alert("Error", response.message || "Failed to update visibility");
@@ -606,7 +608,7 @@ export default function Profile() {
       const response = await apiService.updateProfileField(
         userId,
         "work_experience_list",
-        JSON.stringify(workList)
+        JSON.stringify(workList),
       );
 
       if (response.success) {
@@ -620,7 +622,7 @@ export default function Profile() {
       } else {
         Alert.alert(
           "Error",
-          response.message || "Failed to update work experience"
+          response.message || "Failed to update work experience",
         );
       }
     } catch (error) {
@@ -638,7 +640,7 @@ export default function Profile() {
       const response = await apiService.updateProfileField(
         userId,
         "skills",
-        JSON.stringify(skillsList)
+        JSON.stringify(skillsList),
       );
 
       if (response.success) {
@@ -681,7 +683,7 @@ export default function Profile() {
       const response = await apiService.updateProfileField(
         userId,
         editingField,
-        tempValue.trim()
+        tempValue.trim(),
       );
 
       if (response.success) {
@@ -696,7 +698,7 @@ export default function Profile() {
           }));
 
           setUpdateSuccess(
-            "Your change has been submitted for admin approval. You will be notified once it's reviewed."
+            "Your change has been submitted for admin approval. You will be notified once it's reviewed.",
           );
 
           setTimeout(() => {
@@ -741,13 +743,13 @@ export default function Profile() {
           setUpdateError(response.errors.join("\n"));
         } else {
           setUpdateError(
-            response.message || "Failed to update profile. Please try again."
+            response.message || "Failed to update profile. Please try again.",
           );
         }
       }
     } catch (error) {
       setUpdateError(
-        "Network error. Please check your connection and try again."
+        "Network error. Please check your connection and try again.",
       );
     } finally {
       setUpdating(false);
@@ -758,24 +760,12 @@ export default function Profile() {
     setShowLogoutModal(false);
 
     try {
-      await Promise.all([
-        SecureStore.deleteItemAsync("user_id"),
-        SecureStore.deleteItemAsync("user_type"),
-        SecureStore.deleteItemAsync("jwt_token"),
-        SecureStore.deleteItemAsync("user_email"),
-        SecureStore.deleteItemAsync("user_first_name"),
-        SecureStore.deleteItemAsync("user_last_name"),
-        SecureStore.deleteItemAsync("user_status"),
-      ]);
-
+      // 1. Inform server and clear all session data via central service
       await apiService.logout();
 
-      Alert.alert("Logged Out", "You have been logged out successfully.", [
-        {
-          text: "OK",
-          onPress: () => router.replace("/choose-path"),
-        },
-      ]);
+      // 2. Immediate redirection to starting screen 
+      // (Standard confirmation on mobile is the transition itself)
+      router.replace("/choose-path");
     } catch (error) {
       console.log("Logout error:", error);
       router.replace("/choose-path");
@@ -809,7 +799,7 @@ export default function Profile() {
                 await handleLogout();
               },
             },
-          ]
+          ],
         );
       } else {
         Alert.alert("Error", response.message || "Failed to delete account");
@@ -1224,15 +1214,15 @@ export default function Profile() {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Ionicons
               name={
-                userProfile?.is_verified == "active"
+                userProfile?.is_verified === "active"
                   ? "checkmark-circle"
-                  : "alert-circle"
+                  : "time-outline"
               }
               size={16}
               color={
-                userProfile?.is_verified == "active"
+                userProfile?.is_verified === "active"
                   ? theme.colors.status.success
-                  : theme.colors.status.warning
+                  : theme.colors.primary.orange
               }
               style={{ marginRight: theme.spacing.xs }}
             />
@@ -1241,14 +1231,14 @@ export default function Profile() {
                 fontSize: theme.typography.sizes.sm,
                 fontFamily: theme.typography.fonts.regular,
                 color:
-                  userProfile?.is_verified == "active"
+                  userProfile?.is_verified === "active"
                     ? theme.colors.status.success
-                    : theme.colors.status.warning,
+                    : theme.colors.primary.orange,
               }}
             >
-              {userProfile?.is_verified == "active"
+              {userProfile?.is_verified === "active"
                 ? "Verified Profile"
-                : "Verification Pending"}
+                : "Awaiting Admin Approval"}
             </Text>
           </View>
         </View>
@@ -1503,7 +1493,7 @@ export default function Profile() {
   // Pending Changes Section
   const PendingChangesSection = () => {
     const pendingItems = Object.entries(pendingChanges).filter(
-      ([_, change]) => change && change.status === "pending"
+      ([_, change]) => change && change.status === "pending",
     );
 
     if (pendingItems.length === 0) return null;
@@ -2202,7 +2192,7 @@ export default function Profile() {
                         paddingVertical: theme.spacing.sm,
                         borderLeftWidth: 3,
                         borderLeftColor: getProficiencyColor(
-                          skillObj.proficiency_level
+                          skillObj.proficiency_level,
                         ),
                       }}
                     >
@@ -2331,8 +2321,8 @@ export default function Profile() {
               userProfile?.email_verified == 1
                 ? "Verified ✓"
                 : userProfile?.email_verified == 0
-                ? "Not Verified"
-                : "Not Verified"
+                  ? "Not Verified"
+                  : "Not Verified"
             }
             field="email_verified"
             editable={false}
@@ -2343,8 +2333,8 @@ export default function Profile() {
               userProfile?.phone_verified == 1
                 ? "Verified ✓"
                 : userProfile?.email_verified == 0
-                ? "Not Verified"
-                : "Not Verified"
+                  ? "Not Verified"
+                  : "Not Verified"
             }
             field="phone_verified"
             editable={false}

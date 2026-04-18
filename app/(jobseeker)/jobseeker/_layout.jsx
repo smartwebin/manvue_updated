@@ -90,12 +90,11 @@ export default function JobSeekerLayout() {
     const isJobDetailsV2 = pathname.includes("/job-details-v2");
 
     if (subscriptionStatus === "active") {
-      // Paid users can access the main app (Home). They should not see landing-matches.
-      // Use absolute path check to prevent loop
+      // Paid users can access the main app (Home) even if not approved yet
       if (isLandingMatches) {
         console.log("🛡️ Paid user detected - moving to home");
         setTimeout(() => {
-          if (pathname.includes("/landing-matches")) {
+          if (global.currentPathname.includes("/landing-matches")) {
             router.replace("/(jobseeker)/jobseeker/home");
           }
         }, 0);
