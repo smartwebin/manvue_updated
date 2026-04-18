@@ -65,9 +65,14 @@ export default function JobSeekerLayout() {
 
     if (subscriptionStatus === "active") {
       // Paid users can access the main app (Home). They should not see landing-matches.
+      // Use absolute path check to prevent loop
       if (isLandingMatches) {
-        console.log("🛡️ Paid user detected - redirecting to home");
-        router.replace("/(jobseeker)/jobseeker/home");
+        console.log("🛡️ Paid user detected - moving to home");
+        setTimeout(() => {
+          if (usePathname().includes("/landing-matches")) {
+            router.replace("/(jobseeker)/jobseeker/home");
+          }
+        }, 0);
       }
     } else {
       // Unpaid users (even if admin-approved) are restricted to landing-matches
@@ -78,9 +83,14 @@ export default function JobSeekerLayout() {
         console.log(
           "🛡️ Unpaid user blocked from",
           pathname,
-          "- redirecting to landing-matches",
+          "- moving to landing-matches",
         );
-        router.replace("/(jobseeker)/jobseeker/landing-matches");
+        setTimeout(() => {
+          const currentPath = usePathname();
+          if (!currentPath.includes("/landing-matches") && !currentPath.includes("/payment")) {
+            router.replace("/(jobseeker)/jobseeker/landing-matches");
+          }
+        }, 0);
       }
     }
   }, [pathname, userStatus, isReady, subscriptionStatus]);

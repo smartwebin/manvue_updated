@@ -60,8 +60,7 @@ export default function JobSeekerHome() {
       const userId = await SecureStore.getItemAsync("user_id");
 
       if (!userId) {
-        setError("User not found. Please log in again.");
-        router.replace("/(auth)/login");
+        setError("Session error. Please log in.");
         return;
       }
 
