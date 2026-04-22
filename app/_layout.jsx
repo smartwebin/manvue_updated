@@ -6,6 +6,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from "react";
 import { AppState, Platform } from 'react-native';
+import { Settings } from 'react-native-fbsdk-next';
 import "react-native-reanimated";
 
 // Create a client
@@ -24,6 +25,16 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync(); // hides immediately on load
+
+    // Initialize Facebook SDK Settings
+    try {
+      Settings.initializeSDK();
+      if (__DEV__) {
+        console.log('✅ Facebook SDK initialized');
+      }
+    } catch (error) {
+      console.error('❌ Error initializing Facebook SDK:', error);
+    }
 
     // Setup online manager for React Native
     const unsubscribe = NetInfo.addEventListener((state) => {

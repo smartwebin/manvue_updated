@@ -80,7 +80,19 @@
           "supportsPictureInPicture": true
         }
       ],
-      "expo-asset"
+      [
+        "react-native-fbsdk-next",
+        {
+          "appID": "713059678427310",
+          "clientToken": "-EAAKIhiTWGK4BRAgveWthsjMleXXofu5y2ebwwZAgLUdkDYDZBKrAGVigkhhlq44lOUNQB5cnWKMyywzZA29QPEbkogzjS0EU1IBzxJx3l82zE2yzOHPmWkiaBrZC7ZA18vqPOWUidrZBXrO2lFPu76o9CepKoY0RLt53ZAhf6YWJEMx3dXbSaTuWR2TpEOUZAQe3VoGPxXfZA",
+          "displayName": "Manvue",
+          "scheme": "fb713059678427310",
+          "advertiserIDCollectionEnabled": false,
+          "autoLogAppEventsEnabled": true,
+          "isAutoInitEnabled": true,
+          "iosUserTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
