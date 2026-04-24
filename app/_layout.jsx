@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      gcTime: 1000 * 60 * 30, // 30 minutes
       retry: 2,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
@@ -27,26 +27,53 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function RootLayout() {
-  useEffect(() => {
-    SplashScreen.hideAsync(); // hides immediately on load
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
+export default function RootLayout() {
+  const [loaded] = useFonts({
+    "Outfit-Thin": require("../assets/fonts/Outfit-Thin.ttf"),
+    "Outfit-ExtraLight": require("../assets/fonts/Outfit-ExtraLight.ttf"),
+    "Outfit-Light": require("../assets/fonts/Outfit-Light.ttf"),
+    "Outfit-Regular": require("../assets/fonts/Outfit-Regular.ttf"),
+    "Outfit-Medium": require("../assets/fonts/Outfit-Medium.ttf"),
+    "Outfit-SemiBold": require("../assets/fonts/Outfit-SemiBold.ttf"),
+    "Outfit-Bold": require("../assets/fonts/Outfit-Bold.ttf"),
+    "Outfit-ExtraBold": require("../assets/fonts/Outfit-ExtraBold.ttf"),
+    "Outfit-Black": require("../assets/fonts/Outfit-Black.ttf"),
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  useEffect(() => {
     // Initialize Facebook SDK with iOS tracking permission
     const initFacebookSDK = async () => {
-      try {
-        if (Platform.OS === "ios") {
-          // Dynamic import to avoid Android crash (iOS-only package)
+      if (Platform.OS === "ios") {
+        try {
           const { requestTrackingPermissionsAsync } =
             await import("expo-tracking-transparency");
+
+          // Note for Production: Consider moving this request to a dedicated onboarding screen
+          // to reduce the risk of Apple rejecting the app for showing it too early without context.
           const { status } = await requestTrackingPermissionsAsync();
+
           Settings.setAdvertiserTrackingEnabled(status === "granted");
+        } catch (error) {
+          console.warn("⚠️ Tracking permission error:", error);
         }
-        Settings.initializeSDK();
-        if (__DEV__) {
-          console.log("✅ Facebook SDK initialized");
-        }
-      } catch (error) {
-        console.error("❌ Facebook SDK init error:", error);
+      }
+
+      // Explicitly initialize the SDK after handling permissions
+      Settings.initializeSDK();
+      if (__DEV__) {
+        console.log("✅ Meta (Facebook) SDK Initialized");
+        // Force a test event to verify network transmission
+        AppEventsLogger.logEvent("SDK_Test_Event_Fired");
+        console.log("📤 Test event sent to Meta");
       }
     };
 
@@ -67,11 +94,8 @@ export default function RootLayout() {
     // Initialize push notifications
     const initNotifications = async () => {
       try {
-        // Register for push notifications and get device token
         await notificationService.registerForPushNotifications();
-        // Set up notification listeners
         notificationService.setupNotificationListeners();
-        // Handle notification if app was opened from quit state
         await notificationService.handleInitialNotification();
         if (__DEV__) {
           console.log("✅ Notification service initialized");
@@ -90,18 +114,6 @@ export default function RootLayout() {
       subscription.remove();
     };
   }, []);
-
-  const [loaded] = useFonts({
-    "Outfit-Thin": require("../assets/fonts/Outfit-Thin.ttf"),
-    "Outfit-ExtraLight": require("../assets/fonts/Outfit-ExtraLight.ttf"),
-    "Outfit-Light": require("../assets/fonts/Outfit-Light.ttf"),
-    "Outfit-Regular": require("../assets/fonts/Outfit-Regular.ttf"),
-    "Outfit-Medium": require("../assets/fonts/Outfit-Medium.ttf"),
-    "Outfit-SemiBold": require("../assets/fonts/Outfit-SemiBold.ttf"),
-    "Outfit-Bold": require("../assets/fonts/Outfit-Bold.ttf"),
-    "Outfit-ExtraBold": require("../assets/fonts/Outfit-ExtraBold.ttf"),
-    "Outfit-Black": require("../assets/fonts/Outfit-Black.ttf"),
-  });
 
   if (!loaded) {
     return null;
