@@ -1,7 +1,7 @@
 import CustomInput from "@/components/CustomInput";
 import SafeAreaWrapper from "@/components/SafeAreaWrapper";
-import apiService from '@/services/apiService';
-import notificationService from '@/services/notificationService';
+import apiService from "@/services/apiService";
+import notificationService from "@/services/notificationService";
 import theme from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,7 +17,7 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -65,7 +65,7 @@ export default function EmployerLogin() {
           duration: 3500,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, []);
 
@@ -86,13 +86,17 @@ export default function EmployerLogin() {
     if (!formData.emailOrMobile.trim()) {
       newErrors.emailOrMobile = "Email or mobile number is required";
     } else {
-      const isEmail = formData.emailOrMobile.includes('@');
+      const isEmail = formData.emailOrMobile.includes("@");
       if (isEmail) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailOrMobile)) {
           newErrors.emailOrMobile = "Please enter a valid email address";
         }
       } else {
-        if (!/^[+]?[1-9][\d]{9,14}$/.test(formData.emailOrMobile.replace(/\s/g, ''))) {
+        if (
+          !/^[+]?[1-9][\d]{9,14}$/.test(
+            formData.emailOrMobile.replace(/\s/g, ""),
+          )
+        ) {
           newErrors.emailOrMobile = "Please enter a valid mobile number";
         }
       }
@@ -127,33 +131,40 @@ export default function EmployerLogin() {
       });
 
       if (response.success) {
-
-        router.replace('/employer/home');
+        router.replace("/employer/home");
       } else {
         // Handle login failure - display exact errors from API
-        if (response.errors && Array.isArray(response.errors) && response.errors.length > 0) {
+        if (
+          response.errors &&
+          Array.isArray(response.errors) &&
+          response.errors.length > 0
+        ) {
           // Display all errors from the API
-          setLoginError(response.errors.join('\n'));
+          setLoginError(response.errors.join("\n"));
         } else if (response.message) {
           setLoginError(response.message);
         } else {
-          setLoginError('Invalid credentials. Please check your email/phone and password.');
+          setLoginError(
+            "Invalid credentials. Please check your email/phone and password.",
+          );
         }
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setLoginError('Network error. Please check your internet connection and try again.');
+      console.error("Login error:", error);
+      setLoginError(
+        "Network error. Please check your internet connection and try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleForgotPassword = () => {
-    router.push('/forgot-password?type=employer');
+    router.push("/forgot-password?type=employer");
   };
 
   const handleSignUp = () => {
-    router.push('/employer-signup');
+    router.push("/employer-signup");
   };
 
   // Floating decorative element
@@ -172,7 +183,7 @@ export default function EmployerLogin() {
       <Animated.View
         style={[
           {
-            position: 'absolute',
+            position: "absolute",
             width: size,
             height: size,
             borderRadius: size / 2,
@@ -197,8 +208,8 @@ export default function EmployerLogin() {
       {/* Background Gradient */}
       <LinearGradient
         colors={[
-          'rgba(30, 74, 114, 0.08)',
-          'rgba(30, 74, 114, 0.03)',
+          "rgba(30, 74, 114, 0.08)",
+          "rgba(30, 74, 114, 0.03)",
           theme.colors.background.primary,
         ]}
         style={{
@@ -239,28 +250,28 @@ export default function EmployerLogin() {
           keyboardShouldPersistTaps="handled"
         >
           {/* iOS Back Button */}
-                {Platform.OS === "ios" && (
-                  <TouchableOpacity
-                    onPress={() => router.push("/choose-path")}
-                    style={{
-                      position: "absolute",
-                      top: theme.spacing.md,
-                      left: theme.spacing.md,
-                      zIndex: 10,
-                      backgroundColor: theme.colors.neutral.white,
-                      borderRadius: theme.borderRadius.full,
-                      padding: theme.spacing.sm,
-                      ...theme.shadows.sm,
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons
-                      name="arrow-back"
-                      size={24}
-                      color={theme.colors.primary.teal}
-                    />
-                  </TouchableOpacity>
-                )}
+          {Platform.OS === "ios" && (
+            <TouchableOpacity
+              onPress={() => router.push("/choose-path")}
+              style={{
+                position: "absolute",
+                top: theme.spacing.md,
+                left: theme.spacing.md,
+                zIndex: 10,
+                backgroundColor: theme.colors.neutral.white,
+                borderRadius: theme.borderRadius.full,
+                padding: theme.spacing.sm,
+                ...theme.shadows.sm,
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={theme.colors.primary.teal}
+              />
+            </TouchableOpacity>
+          )}
           {/* Header */}
           <Animated.View
             style={{
@@ -271,7 +282,9 @@ export default function EmployerLogin() {
             }}
           >
             {/* Logo and Branding */}
-            <View style={{ alignItems: "center", marginBottom: theme.spacing.lg }}>
+            <View
+              style={{ alignItems: "center", marginBottom: theme.spacing.lg }}
+            >
               <View
                 style={{
                   width: 60,
@@ -283,7 +296,7 @@ export default function EmployerLogin() {
                   ...theme.shadows.md,
                   marginBottom: theme.spacing.md,
                   borderWidth: 2,
-                  borderColor: 'rgba(30, 74, 114, 0.1)',
+                  borderColor: "rgba(30, 74, 114, 0.1)",
                 }}
               >
                 <Image
@@ -332,20 +345,22 @@ export default function EmployerLogin() {
             }}
           >
             {/* Login Form */}
-            <View style={{
-              backgroundColor: theme.colors.neutral.white,
-              borderRadius: theme.borderRadius.xl,
-              padding: theme.spacing.lg,
-              ...theme.shadows.lg,
-              borderWidth: 1,
-              borderColor: theme.colors.border.light,
-              marginBottom: theme.spacing.md,
-            }}>
+            <View
+              style={{
+                backgroundColor: theme.colors.neutral.white,
+                borderRadius: theme.borderRadius.xl,
+                padding: theme.spacing.lg,
+                ...theme.shadows.lg,
+                borderWidth: 1,
+                borderColor: theme.colors.border.light,
+                marginBottom: theme.spacing.md,
+              }}
+            >
               {/* Subtle gradient background */}
               <LinearGradient
-                colors={['transparent', 'rgba(30, 74, 114, 0.03)']}
+                colors={["transparent", "rgba(30, 74, 114, 0.03)"]}
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: 0,
                   left: 0,
                   right: 0,
@@ -357,7 +372,9 @@ export default function EmployerLogin() {
               <CustomInput
                 label="Email or Mobile Number"
                 value={formData.emailOrMobile}
-                onChangeText={(value) => handleInputChange("emailOrMobile", value)}
+                onChangeText={(value) =>
+                  handleInputChange("emailOrMobile", value)
+                }
                 placeholder="Enter your email or mobile number"
                 error={errors.emailOrMobile}
                 icon="business-outline"
@@ -380,7 +397,7 @@ export default function EmployerLogin() {
               {loginError ? (
                 <View
                   style={{
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    backgroundColor: "rgba(239, 68, 68, 0.1)",
                     borderRadius: theme.borderRadius.md,
                     padding: theme.spacing.md,
                     marginBottom: theme.spacing.md,
@@ -393,7 +410,7 @@ export default function EmployerLogin() {
                       fontSize: theme.typography.sizes.sm,
                       fontFamily: theme.typography.fonts.medium,
                       color: theme.colors.status.error,
-                      textAlign: 'center',
+                      textAlign: "center",
                     }}
                   >
                     {loginError}
@@ -424,7 +441,10 @@ export default function EmployerLogin() {
 
               {/* Sign In Button */}
               <LinearGradient
-                colors={[theme.colors.primary.deepBlue, theme.colors.secondary.darkBlue]}
+                colors={[
+                  theme.colors.primary.deepBlue,
+                  theme.colors.secondary.darkBlue,
+                ]}
                 style={{
                   borderRadius: theme.borderRadius.lg,
                   ...theme.shadows.md,
@@ -440,8 +460,8 @@ export default function EmployerLogin() {
                     paddingVertical: theme.spacing.md,
                     alignItems: "center",
                     borderRadius: theme.borderRadius.lg,
-                    flexDirection: 'row',
-                    justifyContent: 'center',
+                    flexDirection: "row",
+                    justifyContent: "center",
                   }}
                   activeOpacity={0.9}
                 >
@@ -487,47 +507,56 @@ export default function EmployerLogin() {
             </View>
 
             {/* Employer Benefits */}
-            <View style={{
-              backgroundColor: 'rgba(30, 74, 114, 0.05)',
-              borderRadius: theme.borderRadius.lg,
-              padding: theme.spacing.md,
-              marginBottom: theme.spacing.md,
-              borderWidth: 1,
-              borderColor: 'rgba(30, 74, 114, 0.1)',
-            }}>
-              <Text style={{
-                fontSize: theme.typography.sizes.sm,
-                fontFamily: theme.typography.fonts.semiBold,
-                color: theme.colors.text.primary,
-                marginBottom: theme.spacing.sm,
-                textAlign: 'center',
-              }}>
+            <View
+              style={{
+                backgroundColor: "rgba(30, 74, 114, 0.05)",
+                borderRadius: theme.borderRadius.lg,
+                padding: theme.spacing.md,
+                marginBottom: theme.spacing.md,
+                borderWidth: 1,
+                borderColor: "rgba(30, 74, 114, 0.1)",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: theme.typography.sizes.sm,
+                  fontFamily: theme.typography.fonts.semiBold,
+                  color: theme.colors.text.primary,
+                  marginBottom: theme.spacing.sm,
+                  textAlign: "center",
+                }}
+              >
                 What you get as an Employer:
               </Text>
-              
+
               {[
-                'Advanced skill & experience filtering',
-                'Swipe-based candidate shortlisting',
-                'Direct chat, voice & video interviews',
-                'Free access with GST verification'
+                "Advanced skill & experience filtering",
+                "Swipe-based candidate shortlisting",
+                "Direct chat, voice & video interviews",
+                "Free access with GST verification",
               ].map((benefit, index) => (
-                <View key={index} style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: theme.spacing.xs,
-                }}>
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: theme.spacing.xs,
+                  }}
+                >
                   <Ionicons
                     name="checkmark-circle"
                     size={14}
                     color={theme.colors.primary.deepBlue}
                     style={{ marginRight: theme.spacing.sm }}
                   />
-                  <Text style={{
-                    fontSize: theme.typography.sizes.xs,
-                    fontFamily: theme.typography.fonts.regular,
-                    color: theme.colors.text.secondary,
-                    flex: 1,
-                  }}>
+                  <Text
+                    style={{
+                      fontSize: theme.typography.sizes.xs,
+                      fontFamily: theme.typography.fonts.regular,
+                      color: theme.colors.text.secondary,
+                      flex: 1,
+                    }}
+                  >
                     {benefit}
                   </Text>
                 </View>
@@ -592,27 +621,27 @@ export default function EmployerLogin() {
               >
                 By signing in, you agree to our{" "}
                 <Link href={`/page?page=${"terms"}`}>
-                <Text
-                  style={{
-                    color: theme.colors.primary.deepBlue,
-                    fontFamily: theme.typography.fonts.semiBold,
-                    textDecorationLine: 'underline',
-                  }}
-                >
-                  Terms of Service
-                </Text>
+                  <Text
+                    style={{
+                      color: theme.colors.primary.deepBlue,
+                      fontFamily: theme.typography.fonts.semiBold,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Terms of Service
+                  </Text>
                 </Link>
                 {" and "}
                 <Link href={`/page?page=${"privacy"}`}>
-                <Text
-                  style={{
-                    color: theme.colors.primary.deepBlue,
-                    fontFamily: theme.typography.fonts.semiBold,
-                    textDecorationLine: 'underline',
-                  }}
-                >
-                  Privacy Policy
-                </Text>
+                  <Text
+                    style={{
+                      color: theme.colors.primary.deepBlue,
+                      fontFamily: theme.typography.fonts.semiBold,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Privacy Policy
+                  </Text>
                 </Link>
               </Text>
             </View>

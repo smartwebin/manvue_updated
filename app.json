@@ -26,7 +26,34 @@
             }
           }
         },
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "SKAdNetworkItems": [
+          {
+            "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "n38lu8286q.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "4s89h6z0as.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "4468km3ulz.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "238zf685vr.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "22mmun2rn5.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "4dzt52r2t5.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "578prtvx9j.skadnetwork"
+          }
+        ]
       }
     },
     "android": {
@@ -43,7 +70,9 @@
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET",
+        "com.google.android.gms.permission.AD_ID"
       ]
     },
     "web": {
@@ -84,15 +113,16 @@
         "react-native-fbsdk-next",
         {
           "appID": "713059678427310",
-          "clientToken": "-EAAKIhiTWGK4BRAgveWthsjMleXXofu5y2ebwwZAgLUdkDYDZBKrAGVigkhhlq44lOUNQB5cnWKMyywzZA29QPEbkogzjS0EU1IBzxJx3l82zE2yzOHPmWkiaBrZC7ZA18vqPOWUidrZBXrO2lFPu76o9CepKoY0RLt53ZAhf6YWJEMx3dXbSaTuWR2TpEOUZAQe3VoGPxXfZA",
+          "clientToken": "3b9fbd1b4ba5e92b7b042bf0f5458117",
           "displayName": "Manvue",
           "scheme": "fb713059678427310",
-          "advertiserIDCollectionEnabled": false,
+          "advertiserIDCollectionEnabled": true,
           "autoLogAppEventsEnabled": true,
           "isAutoInitEnabled": true,
           "iosUserTrackingPermission": "This identifier will be used to deliver personalized ads to you."
         }
-      ]
+      ],
+      "expo-tracking-transparency"
     ],
     "experiments": {
       "typedRoutes": true
@@ -100,7 +130,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f6c8a356-5c81-4791-9d41-f8aff7100d75"
+        "projectId": "e973ffe0-fd55-45c7-813b-3c10852bf1ea"
       }
     }
   }

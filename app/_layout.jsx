@@ -1,12 +1,17 @@
 import notificationService from "@/services/notificationService";
-import NetInfo from '@react-native-community/netinfo';
-import { focusManager, onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import NetInfo from "@react-native-community/netinfo";
+import {
+  focusManager,
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import * as SplashScreen from 'expo-splash-screen';
+import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { AppState, Platform } from 'react-native';
-import { Settings } from 'react-native-fbsdk-next';
+import { AppState, Platform } from "react-native";
+import { Settings } from "react-native-fbsdk-next";
 import "react-native-reanimated";
 
 // Create a client
@@ -26,15 +31,26 @@ export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync(); // hides immediately on load
 
-    // Initialize Facebook SDK Settings
-    try {
-      Settings.initializeSDK();
-      if (__DEV__) {
-        console.log('✅ Facebook SDK initialized');
+    // Initialize Facebook SDK with iOS tracking permission
+    const initFacebookSDK = async () => {
+      try {
+        if (Platform.OS === "ios") {
+          // Dynamic import to avoid Android crash (iOS-only package)
+          const { requestTrackingPermissionsAsync } =
+            await import("expo-tracking-transparency");
+          const { status } = await requestTrackingPermissionsAsync();
+          Settings.setAdvertiserTrackingEnabled(status === "granted");
+        }
+        Settings.initializeSDK();
+        if (__DEV__) {
+          console.log("✅ Facebook SDK initialized");
+        }
+      } catch (error) {
+        console.error("❌ Facebook SDK init error:", error);
       }
-    } catch (error) {
-      console.error('❌ Error initializing Facebook SDK:', error);
-    }
+    };
+
+    initFacebookSDK();
 
     // Setup online manager for React Native
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -42,9 +58,9 @@ export default function RootLayout() {
     });
 
     // Setup focus manager for React Native
-    const subscription = AppState.addEventListener('change', (status) => {
-      if (Platform.OS !== 'web') {
-        focusManager.setFocused(status === 'active');
+    const subscription = AppState.addEventListener("change", (status) => {
+      if (Platform.OS !== "web") {
+        focusManager.setFocused(status === "active");
       }
     });
 
@@ -58,10 +74,10 @@ export default function RootLayout() {
         // Handle notification if app was opened from quit state
         await notificationService.handleInitialNotification();
         if (__DEV__) {
-          console.log('✅ Notification service initialized');
+          console.log("✅ Notification service initialized");
         }
       } catch (error) {
-        console.error('❌ Error initializing notifications:', error);
+        console.error("❌ Error initializing notifications:", error);
       }
     };
 

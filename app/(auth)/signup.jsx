@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { AppEventsLogger } from 'react-native-fbsdk-next';
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -610,6 +611,13 @@ export default function Signup() {
       if (response.success) {
         console.log("✅ Signup successful");
 
+        // Log Facebook CompletedRegistration event
+        try {
+          AppEventsLogger.logEvent(AppEventsLogger.AppEvents.CompletedRegistration);
+        } catch (e) {
+          console.error("❌ FB event error:", e);
+        }
+
         // Store user data in SecureStore
         if (response.data?.user_id) {
           await SecureStore.setItemAsync(
@@ -665,7 +673,9 @@ export default function Signup() {
         console.log("✅ Signup successful, User ID:", response.data.user_id);
 
         // Always redirect new signups to the landing-matches lobby initially
-        console.log("🆕 New jobseeker signup, redirecting to landing-matches lobby");
+        console.log(
+          "🆕 New jobseeker signup, redirecting to landing-matches lobby",
+        );
         router.replace("/(jobseeker)/jobseeker/landing-matches");
       } else {
         console.log("response", response);

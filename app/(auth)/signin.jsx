@@ -22,6 +22,7 @@ import {
   View,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { AppEventsLogger } from 'react-native-fbsdk-next';
 
 const { width, height } = Dimensions.get("window");
 
@@ -145,7 +146,13 @@ export default function JobSeekerLogin() {
         if (response.success) {
           if (__DEV__) {
             console.log("✅ Login successful:", response.message);
-            console.log("📦 Subscription data:", response.data?.subscription);
+          }
+
+          // Log Facebook Login event
+          try {
+            AppEventsLogger.logEvent("Login");
+          } catch (e) {
+            console.error("❌ FB event error:", e);
           }
 
           // Fetch subscription data

@@ -107,9 +107,9 @@ export default function JobDetailsScreen() {
         "Already Applied",
         `You have already applied for this position. Your application status is: ${jobDetails.application_status?.replace(
           "_",
-          " "
+          " ",
         )}`,
-        [{ text: "OK" }]
+        [{ text: "OK" }],
       );
       return;
     }
@@ -160,12 +160,12 @@ export default function JobDetailsScreen() {
                 loadJobDetails(false);
               },
             },
-          ]
+          ],
         );
       } else {
         Alert.alert(
           "Error",
-          response.message || "Failed to submit application"
+          response.message || "Failed to submit application",
         );
       }
     } catch (error) {
@@ -572,14 +572,14 @@ export default function JobDetailsScreen() {
                   jobDetails.match_percentage >= 80
                     ? [theme.colors.status.success, "#0D9488"]
                     : jobDetails.match_percentage >= 60
-                    ? [
-                        theme.colors.primary.teal,
-                        theme.colors.secondary.darkTeal,
-                      ]
-                    : [
-                        theme.colors.primary.orange,
-                        theme.colors.secondary.darkOrange,
-                      ]
+                      ? [
+                          theme.colors.primary.teal,
+                          theme.colors.secondary.darkTeal,
+                        ]
+                      : [
+                          theme.colors.primary.orange,
+                          theme.colors.secondary.darkOrange,
+                        ]
                 }
                 style={{
                   paddingHorizontal: theme.spacing.md,
@@ -701,7 +701,7 @@ export default function JobDetailsScreen() {
                 icon="calendar-outline"
                 label="Deadline"
                 value={new Date(
-                  jobDetails.application_deadline
+                  jobDetails.application_deadline,
                 ).toLocaleDateString()}
               />
             )}
@@ -760,7 +760,7 @@ export default function JobDetailsScreen() {
                 >
                   {jobDetails.skills.map((skill, index) => {
                     const isMatching = jobDetails.matching_skills?.includes(
-                      skill.skill_name
+                      skill.skill_name,
                     );
                     return (
                       <View

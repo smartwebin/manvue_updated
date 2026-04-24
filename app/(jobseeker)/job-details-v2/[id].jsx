@@ -42,13 +42,15 @@ export default function JobDetailsV2Screen() {
     try {
       const storedId = await SecureStore.getItemAsync("user_id");
       const storedStatus = await SecureStore.getItemAsync("user_status");
-      
+
       setUserId(storedId);
       setUserStatus(storedStatus);
 
       // REDIRECT LOGIC: If user is active (paid), they should use the standard job-details page
       if (storedStatus === "active") {
-        console.log("🛡️ Paid user on V2 page - redirecting to standard details");
+        console.log(
+          "🛡️ Paid user on V2 page - redirecting to standard details",
+        );
         router.replace(`/details/${id}`);
       }
     } catch (error) {
@@ -675,13 +677,15 @@ export default function JobDetailsV2Screen() {
           }}
         >
           {userStatus === "inactive" && (
-            <Text style={{ 
-              textAlign: "center", 
-              marginBottom: 12, 
-              color: theme.colors.text.secondary,
-              fontSize: 13,
-              fontFamily: theme.typography.fonts.medium
-            }}>
+            <Text
+              style={{
+                textAlign: "center",
+                marginBottom: 12,
+                color: theme.colors.text.secondary,
+                fontSize: 13,
+                fontFamily: theme.typography.fonts.medium,
+              }}
+            >
               Unlock full features and Apply by upgrading
             </Text>
           )}
@@ -689,9 +693,10 @@ export default function JobDetailsV2Screen() {
           <TouchableOpacity
             onPress={handleApplyPress}
             style={{
-              backgroundColor: jobDetails?.has_applied && userStatus !== "inactive"
-                ? "#e5e7eb"
-                : theme.colors.primary.teal,
+              backgroundColor:
+                jobDetails?.has_applied && userStatus !== "inactive"
+                  ? "#e5e7eb"
+                  : theme.colors.primary.teal,
               paddingVertical: 16,
               borderRadius: 15,
               alignItems: "center",
@@ -699,11 +704,16 @@ export default function JobDetailsV2Screen() {
               justifyContent: "center",
               shadowColor: theme.colors.primary.teal,
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: (jobDetails?.has_applied && userStatus !== "inactive") ? 0 : 0.2,
+              shadowOpacity:
+                jobDetails?.has_applied && userStatus !== "inactive" ? 0 : 0.2,
               shadowRadius: 8,
-              elevation: (jobDetails?.has_applied && userStatus !== "inactive") ? 0 : 4,
+              elevation:
+                jobDetails?.has_applied && userStatus !== "inactive" ? 0 : 4,
             }}
-            disabled={(jobDetails?.has_applied && userStatus !== "inactive") || submitting}
+            disabled={
+              (jobDetails?.has_applied && userStatus !== "inactive") ||
+              submitting
+            }
           >
             {submitting ? (
               <ActivityIndicator color="white" />
@@ -711,21 +721,28 @@ export default function JobDetailsV2Screen() {
               <>
                 <Text
                   style={{
-                    color: (jobDetails?.has_applied && userStatus !== "inactive") ? "#9ca3af" : "white",
+                    color:
+                      jobDetails?.has_applied && userStatus !== "inactive"
+                        ? "#9ca3af"
+                        : "white",
                     fontWeight: "bold",
                     fontSize: 16,
                     marginRight: 8,
                   }}
                 >
-                  {userStatus === "inactive" 
-                    ? "Upgrade to Premium" 
-                    : (jobDetails?.has_applied ? "Already Applied" : "Easy Apply Now")}
+                  {userStatus === "inactive"
+                    ? "Upgrade to Premium"
+                    : jobDetails?.has_applied
+                      ? "Already Applied"
+                      : "Easy Apply Now"}
                 </Text>
                 {userStatus === "inactive" ? (
                   <Ionicons name="lock-closed" size={18} color="white" />
-                ) : (!jobDetails?.has_applied && (
-                  <Ionicons name="flash" size={18} color="white" />
-                ))}
+                ) : (
+                  !jobDetails?.has_applied && (
+                    <Ionicons name="flash" size={18} color="white" />
+                  )
+                )}
               </>
             )}
           </TouchableOpacity>
