@@ -52,7 +52,9 @@ export default function RootLayout() {
     // Initialize Facebook SDK
     const initFacebookSDK = async () => {
       try {
-        const { Settings } = await import("react-native-fbsdk-next");
+        // ✅ FIXED: Destructure both Settings and AppEventsLogger
+        const { Settings, AppEventsLogger } =
+          await import("react-native-fbsdk-next");
 
         if (Platform.OS === "ios") {
           try {
@@ -68,6 +70,8 @@ export default function RootLayout() {
 
         // Initialize AFTER setting tracking preference
         Settings.initializeSDK();
+
+        // ✅ FIXED: AppEventsLogger is now defined and will successfully log the event
         AppEventsLogger.logEvent("fb_mobile_search");
 
         if (__DEV__) {
