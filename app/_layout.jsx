@@ -11,7 +11,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { AppState, Platform } from "react-native";
-import { Settings } from "react-native-fbsdk-next";
 import "react-native-reanimated";
 
 // Create a client
@@ -50,30 +49,40 @@ export default function RootLayout() {
   }, [loaded]);
 
   useEffect(() => {
-    // Initialize Facebook SDK with iOS tracking permission
+    // Initialize Facebook SDK
     const initFacebookSDK = async () => {
-      if (Platform.OS === "ios") {
-        try {
-          const { requestTrackingPermissionsAsync } =
-            await import("expo-tracking-transparency");
+      try {
+        const { Settings } = await import("react-native-fbsdk-next");
 
-          // Note for Production: Consider moving this request to a dedicated onboarding screen
-          // to reduce the risk of Apple rejecting the app for showing it too early without context.
-          const { status } = await requestTrackingPermissionsAsync();
-
-          Settings.setAdvertiserTrackingEnabled(status === "granted");
-        } catch (error) {
-          console.warn("⚠️ Tracking permission error:", error);
+        if (Platform.OS === "ios") {
+          try {
+            const { requestTrackingPermissionsAsync } =
+              await import("expo-tracking-transparency");
+            const { status } = await requestTrackingPermissionsAsync();
+            Settings.setAdvertiserTrackingEnabled(status === "granted");
+          } catch (attError) {
+            console.warn("⚠️ ATT permission error:", attError.message);
+            Settings.setAdvertiserTrackingEnabled(false);
+          }
         }
-      }
 
-      // Explicitly initialize the SDK after handling permissions
-      Settings.initializeSDK();
-      if (__DEV__) {
-        console.log("✅ Meta (Facebook) SDK Initialized");
-        // Force a test event to verify network transmission
-        AppEventsLogger.logEvent("SDK_Test_Event_Fired");
-        console.log("📤 Test event sent to Meta");
+        // Initialize AFTER setting tracking preference
+        Settings.initializeSDK();
+        AppEventsLogger.logEvent("fb_mobile_search");
+
+        if (__DEV__) {
+          console.log("✅ Meta SDK initialized and test event sent");
+        }
+        if (Platform.OS === "android") {
+          // Explicitly enable for Android to ensure events flow
+          Settings.setAdvertiserIDCollectionEnabled(true);
+        }
+
+        if (__DEV__) {
+          console.log("✅ Meta SDK initialized and activated");
+        }
+      } catch (error) {
+        console.warn("⚠️ Meta SDK init failed (non-fatal):", error.message);
       }
     };
 

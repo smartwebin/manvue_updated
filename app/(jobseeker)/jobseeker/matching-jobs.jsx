@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import analyticsService from "@/services/analyticsService";
 import {
   ActivityIndicator,
   Dimensions,
@@ -146,6 +147,14 @@ export default function MatchingJobsScreen() {
           setTotalCount(response.data.total_count || 0);
           setHasMore(response.data.pagination?.has_more || false);
           setError(null);
+
+          // Log Facebook Search event if a query exists
+          if (searchQuery.trim() || selectedEmploymentType || selectedWorkMode) {
+            analyticsService.logSearch(
+              searchQuery,
+              selectedEmploymentType || selectedWorkMode
+            );
+          }
         } else {
           console.error("❌ Failed to load matching jobs:", response.message);
           if (reset) {

@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import RazorpayCheckout from 'react-native-razorpay';
+import analyticsService from "@/services/analyticsService";
 
 /**
  * Razorpay Payment Screen for Jobseeker Subscription
@@ -117,6 +118,14 @@ export default function PaymentScreen() {
       console.log('✅ Order created:', order_id);
       console.log('📝 Transaction ID:', transaction_id);
 
+      // Log Facebook InitiateCheckout event
+      analyticsService.logEvent('InitiateCheckout', {
+        plan_id: String(subscriptionPlan.plan_id),
+        plan_name: plan_name,
+        amount: amount / 100, // Razorpay amount is in paise
+        currency: currency
+      });
+
       // Store transaction_id for verification
       await SecureStore.setItemAsync('pending_transaction_id', transaction_id.toString());
 
@@ -212,6 +221,14 @@ export default function PaymentScreen() {
 
           // IMPORTANT: Update user_status to 'active' to unlock the app
           await SecureStore.setItemAsync('user_status', 'active');
+
+          // Log Facebook Subscribe event
+          analyticsService.logPurchase(
+            subscriptionPlan.price,
+            'INR',
+            subscriptionPlan.plan_id,
+            subscriptionPlan.plan_name
+          );
         }
 
         setIsProcessingPayment(false);

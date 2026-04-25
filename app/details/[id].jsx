@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useEffect, useState } from "react";
+import analyticsService from "@/services/analyticsService";
 import {
   ActivityIndicator,
   Alert,
@@ -83,6 +84,17 @@ export default function JobDetailsScreen() {
 
       if (response.success) {
         setJobDetails(response.data);
+        
+        // Log Facebook ViewContent event
+        analyticsService.logViewContent(
+          'job',
+          id,
+          response.data.job_title,
+          {
+            company: response.data.company?.company_name,
+            location: response.data.location
+          }
+        );
       } else {
         console.error("❌ Failed to load job details:", response.message);
         setError(response.message);
@@ -144,6 +156,13 @@ export default function JobDetailsScreen() {
       }
 
       if (response.success) {
+        // Log Facebook SubmitApplication event
+        analyticsService.logSubmitApplication(
+          id,
+          jobDetails?.job_title,
+          jobDetails?.company?.company_name
+        );
+
         setShowApplicationModal(false);
         setCoverLetter("");
         setExpectedSalary("");

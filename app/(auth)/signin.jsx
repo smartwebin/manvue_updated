@@ -22,7 +22,7 @@ import {
   View,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { AppEventsLogger } from 'react-native-fbsdk-next';
+import analyticsService from "@/services/analyticsService";
 
 const { width, height } = Dimensions.get("window");
 
@@ -149,11 +149,7 @@ export default function JobSeekerLogin() {
           }
 
           // Log Facebook Login event
-          try {
-            AppEventsLogger.logEvent("Login");
-          } catch (e) {
-            console.error("❌ FB event error:", e);
-          }
+          analyticsService.logLogin('Email', 'jobseeker');
 
           // Fetch subscription data
           const subscription = response.data?.subscription;

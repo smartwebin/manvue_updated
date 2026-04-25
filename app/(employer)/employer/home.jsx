@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useEffect, useState } from "react";
+import analyticsService from "@/services/analyticsService";
 import {
   ActivityIndicator,
   Alert,
@@ -98,6 +99,13 @@ export default function EmployerHome() {
 
       if (response.success) {
         setDashboardData(response.data);
+        
+        // Log Facebook ViewContent event
+        analyticsService.logViewContent(
+          'employer_dashboard',
+          companyId,
+          response.data.company?.name || 'Employer Dashboard'
+        );
       } else {
         console.error("❌ Failed to load dashboard:", response.message);
         // Alert.alert('Error', response.message || 'Failed to load dashboard data');

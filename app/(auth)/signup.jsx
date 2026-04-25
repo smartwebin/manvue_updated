@@ -14,7 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { AppEventsLogger } from 'react-native-fbsdk-next';
+import analyticsService from "@/services/analyticsService";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -612,11 +612,7 @@ export default function Signup() {
         console.log("✅ Signup successful");
 
         // Log Facebook CompletedRegistration event
-        try {
-          AppEventsLogger.logEvent(AppEventsLogger.AppEvents.CompletedRegistration);
-        } catch (e) {
-          console.error("❌ FB event error:", e);
-        }
+        analyticsService.logRegistration('Email', 'jobseeker');
 
         // Store user data in SecureStore
         if (response.data?.user_id) {
