@@ -112,10 +112,10 @@
       [
         "react-native-fbsdk-next",
         {
-          "appID": "713059678427310",
+          "appID": "713059878427310",
           "clientToken": "3b9fbd1b4ba5e92b7b042bf0f5458117",
           "displayName": "Manvue",
-          "scheme": "fb713059678427310",
+          "scheme": "fb713059878427310",
           "advertiserIDCollectionEnabled": true,
           "autoLogAppEventsEnabled": true,
           "isAutoInitEnabled": true,
@@ -143,7 +143,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f6c8a356-5c81-4791-9d41-f8aff7100d75"
+        "projectId": "e973ffe0-fd55-45c7-813b-3c10852bf1ea"
       }
     }
   }
