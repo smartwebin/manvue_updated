@@ -112,10 +112,10 @@
       [
         "react-native-fbsdk-next",
         {
-          "appID": "713059878427310",
+          "appID": "713059678427310",
           "clientToken": "3b9fbd1b4ba5e92b7b042bf0f5458117",
           "displayName": "Manvue",
-          "scheme": "fb713059878427310",
+          "scheme": "fb713059678427310",
           "advertiserIDCollectionEnabled": true,
           "autoLogAppEventsEnabled": true,
           "isAutoInitEnabled": true,
