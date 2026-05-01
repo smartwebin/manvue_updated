@@ -428,6 +428,7 @@ export default function LandingMatchesScreen() {
             style={{
               borderRadius: 15,
               padding: 15,
+              paddingBottom: 25, // Added padding for better mobile accessibility
               marginTop: 15,
               flexDirection: "row",
               alignItems: "center", // Vertically center everything
@@ -445,7 +446,7 @@ export default function LandingMatchesScreen() {
                 color="white" 
               />
             </View>
-
+ 
             <View style={{ flex: 1, marginLeft: 12, paddingRight: 10 }}>
               <Text style={{ 
                 color: "white", 
@@ -466,7 +467,7 @@ export default function LandingMatchesScreen() {
                   : "Upgrade to Premium to apply and unlock full features."}
               </Text>
             </View>
-
+ 
             {subscriptionStatus !== "active" && (
               <Ionicons name="chevron-forward" size={20} color="white" />
             )}
