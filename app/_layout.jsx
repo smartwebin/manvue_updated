@@ -110,6 +110,8 @@ export default function RootLayout() {
         await notificationService.registerForPushNotifications();
         notificationService.setupNotificationListeners();
         await notificationService.handleInitialNotification();
+        // Sync token with server if logged in
+        await notificationService.syncTokenWithServer();
         if (__DEV__) {
           console.log("✅ Notification service initialized");
         }

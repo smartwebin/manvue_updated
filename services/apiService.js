@@ -665,6 +665,20 @@ class ApiService {
     }
   }
 
+  // Update push token API
+  async updatePushToken(tokenData) {
+    try {
+      const response = await apiClient.post(
+        API_CONFIG.ENDPOINTS.UPDATE_TOKEN,
+        tokenData,
+      );
+      return response.data;
+    } catch (error) {
+      console.log("❌ Update push token error:", error);
+      return { success: false, message: error.message };
+    }
+  }
+
   // Get user profile (legacy method)
   async getProfile(userId) {
     try {

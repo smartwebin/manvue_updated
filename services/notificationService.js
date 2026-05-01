@@ -1,8 +1,10 @@
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import apiService from "./apiService";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -46,7 +48,7 @@ class NotificationService {
 
       // Get the token
       const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: "f6c8a356-5c81-4791-9d41-f8aff710d075", // Your project ID from app.json
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
       });
 
       this.deviceToken = tokenData.data;
@@ -305,6 +307,40 @@ class NotificationService {
 
     if (__DEV__) {
       console.log("✅ Notification listeners removed");
+    }
+  }
+
+  // Sync token with server if user is logged in
+  async syncTokenWithServer() {
+    try {
+      const userId = await SecureStore.getItemAsync("user_id");
+      if (!userId) {
+        if (__DEV__) console.log("ℹ️ No user logged in, skipping token sync");
+        return;
+      }
+
+      const token = await this.getDeviceToken();
+      if (!token) {
+        if (__DEV__) console.log("⚠️ No device token available for sync");
+        return;
+      }
+
+      if (__DEV__) console.log("🔄 Syncing device token with server for user:", userId);
+
+      const response = await apiService.updatePushToken({
+        user_id: userId,
+        device_token: token,
+        platform: Platform.OS,
+        device_model: Device.modelName || "unknown",
+      });
+
+      if (response.success) {
+        if (__DEV__) console.log("✅ Device token synced successfully");
+      } else {
+        if (__DEV__) console.log("❌ Device token sync failed:", response.message);
+      }
+    } catch (error) {
+      console.error("❌ Error syncing token with server:", error);
     }
   }
 }

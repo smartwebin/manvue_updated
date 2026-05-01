@@ -105,6 +105,7 @@ export const API_CONFIG = {
     GET_PAGE: "/get-page.php",
     FORGOT_PASSWORD: "/forgot-password.php",
     RESET_PASSWORD: "/reset-password.php",
+    UPDATE_TOKEN: "/update-token.php",
   },
 
   // Request headers
