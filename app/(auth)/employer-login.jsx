@@ -20,6 +20,8 @@ import {
   View,
 } from "react-native";
 
+import analyticsService from "@/services/analyticsService";
+
 const { width, height } = Dimensions.get("window");
 
 export default function EmployerLogin() {
@@ -131,6 +133,8 @@ export default function EmployerLogin() {
       });
 
       if (response.success) {
+        // Log Facebook Login event
+        analyticsService.logLogin(response.data, 'Email');
         router.replace("/employer/home");
       } else {
         // Handle login failure - display exact errors from API

@@ -68,19 +68,27 @@ export default function RootLayout() {
           }
         }
 
-        // Initialize AFTER setting tracking preference
-        Settings.initializeSDK();
-
-        // ✅ FIXED: AppEventsLogger is now defined and will successfully log the event
-        AppEventsLogger.logEvent("fb_mobile_search");
-
-        if (__DEV__) {
-          console.log("✅ Meta SDK initialized and test event sent");
-        }
         if (Platform.OS === "android") {
           // Explicitly enable for Android to ensure events flow
           Settings.setAdvertiserIDCollectionEnabled(true);
         }
+
+        // Explicitly set App ID just in case auto-init being false causes it to drop the manifest config
+        Settings.setAppID("713059678427310");
+        Settings.setAutoLogAppEventsEnabled(true);
+
+        // Initialize AFTER setting tracking preference
+        Settings.initializeSDK();
+
+        // 🎯 Give native SDK a moment to warm up before sending events
+        setTimeout(() => {
+          AppEventsLogger.logEvent("test_event");
+          AppEventsLogger.flush();
+
+          if (__DEV__) {
+            console.log("✅ Sent 'test_event' to Meta and flushed! Check Test Events tab.");
+          }
+        }, 2000);
 
         if (__DEV__) {
           console.log("✅ Meta SDK initialized and activated");

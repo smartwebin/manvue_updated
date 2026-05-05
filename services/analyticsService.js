@@ -60,12 +60,40 @@ class AnalyticsService {
   }
 
   /**
+   * Associate events with a specific user profile
+   */
+  async setUser(user) {
+    const logger = await this._getSDK();
+    if (!logger) return;
+
+    if (user && user.user_id) {
+      logger.setUserID(String(user.user_id));
+      
+      const userData = {};
+      if (user.email) userData.email = user.email;
+      if (user.first_name) userData.firstName = user.first_name;
+      if (user.last_name) userData.lastName = user.last_name;
+      if (user.phone) userData.phone = user.phone;
+      
+      if (Object.keys(userData).length > 0) {
+        logger.setUserData(userData);
+      }
+    } else {
+      logger.setUserID(null);
+    }
+  }
+
+  /**
    * Standard Event: Login
    */
-  async logLogin(method = 'Email', userType = 'jobseeker') {
+  async logLogin(user, method = 'Email') {
+    if (user) {
+      await this.setUser(user);
+    }
+    
     this.logEvent('Login', {
       method,
-      user_type: userType
+      user_type: user?.user_type || 'jobseeker'
     });
   }
 

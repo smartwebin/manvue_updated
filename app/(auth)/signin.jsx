@@ -149,7 +149,7 @@ export default function JobSeekerLogin() {
           }
 
           // Log Facebook Login event
-          analyticsService.logLogin('Email', 'jobseeker');
+          analyticsService.logLogin(response.data, 'Email');
 
           // Fetch subscription data
           const subscription = response.data?.subscription;

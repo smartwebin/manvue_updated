@@ -118,7 +118,7 @@
           "scheme": "fb713059678427310",
           "advertiserIDCollectionEnabled": true,
           "autoLogAppEventsEnabled": true,
-          "isAutoInitEnabled": true,
+          "isAutoInitEnabled": false,
           "iosUserTrackingPermission": "This identifier will be used to deliver personalized ads to you."
         }
       ],
