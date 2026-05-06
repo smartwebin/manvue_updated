@@ -10,8 +10,11 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { AppState, Platform } from "react-native";
+import { AppState, Platform, LogBox } from "react-native";
 import "react-native-reanimated";
+
+// Suppress known warnings from third-party libraries
+LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 
 // Create a client
 const queryClient = new QueryClient({
