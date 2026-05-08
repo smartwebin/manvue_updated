@@ -400,9 +400,9 @@ export default function JobSeekerHome() {
               : item.match_percentage >= 60
                 ? [theme.colors.primary.teal, theme.colors.secondary.darkTeal]
                 : [
-                    theme.colors.primary.orange,
-                    theme.colors.secondary.darkOrange,
-                  ]
+                  theme.colors.primary.orange,
+                  theme.colors.secondary.darkOrange,
+                ]
           }
           style={{
             borderRadius: theme.borderRadius.full,
