@@ -59,42 +59,80 @@ export default function RootLayout() {
         const { Settings, AppEventsLogger } =
           await import("react-native-fbsdk-next");
 
+        // Helper to complete initialization once permissions are set
+        const completeFacebookInitialization = (trackingGranted) => {
+          try {
+            Settings.setAppID("713059678427310");
+            // Set advertiser tracking explicitly based on preference
+            Settings.setAdvertiserTrackingEnabled(trackingGranted);
+            Settings.setAutoLogAppEventsEnabled(trackingGranted); // Only auto-log if allowed!
+            Settings.initializeSDK();
+
+            // Send standard test event if allowed
+            if (trackingGranted) {
+              setTimeout(() => {
+                AppEventsLogger.logEvent("test_event");
+                AppEventsLogger.flush();
+                if (__DEV__) {
+                  console.log("✅ Sent 'test_event' to Meta and flushed! Check Test Events tab.");
+                }
+              }, 2000);
+            }
+
+            if (__DEV__) {
+              console.log(`✅ Meta SDK initialized. Advertiser tracking: ${trackingGranted}`);
+            }
+          } catch (initErr) {
+            console.warn("⚠️ Meta SDK initialization error:", initErr.message);
+          }
+        };
+
         if (Platform.OS === "ios") {
           try {
-            const { requestTrackingPermissionsAsync } =
-              await import("expo-tracking-transparency");
-            const { status } = await requestTrackingPermissionsAsync();
-            Settings.setAdvertiserTrackingEnabled(status === "granted");
+            const requestPermissionWithDelay = async () => {
+              // Wait 1.5 seconds to ensure the view hierarchy is fully loaded and key window is active
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              
+              const { requestTrackingPermissionsAsync, getTrackingPermissionsAsync } =
+                await import("expo-tracking-transparency");
+              
+              // Check current status first
+              let { status } = await getTrackingPermissionsAsync();
+              
+              // Request permission if undetermined
+              if (status === "undetermined") {
+                const result = await requestTrackingPermissionsAsync();
+                status = result.status;
+              }
+              
+              const trackingGranted = status === "granted";
+              completeFacebookInitialization(trackingGranted);
+            };
+
+            // Only request permission when the app state is active/foregrounded
+            if (AppState.currentState === 'active') {
+              await requestPermissionWithDelay();
+            } else {
+              const subscription = AppState.addEventListener('change', async (nextState) => {
+                if (nextState === 'active') {
+                  subscription.remove();
+                  await requestPermissionWithDelay();
+                }
+              });
+            }
           } catch (attError) {
             console.warn("⚠️ ATT permission error:", attError.message);
-            Settings.setAdvertiserTrackingEnabled(false);
+            completeFacebookInitialization(false);
           }
-        }
-
-        if (Platform.OS === "android") {
-          // Explicitly enable for Android to ensure events flow
+        } else {
+          // Android initialization (always active)
           Settings.setAdvertiserIDCollectionEnabled(true);
-        }
-
-        // Explicitly set App ID just in case auto-init being false causes it to drop the manifest config
-        Settings.setAppID("713059678427310");
-        Settings.setAutoLogAppEventsEnabled(true);
-
-        // Initialize AFTER setting tracking preference
-        Settings.initializeSDK();
-
-        // 🎯 Give native SDK a moment to warm up before sending events
-        setTimeout(() => {
-          AppEventsLogger.logEvent("test_event");
-          AppEventsLogger.flush();
-
+          Settings.setAppID("713059678427310");
+          Settings.setAutoLogAppEventsEnabled(true);
+          Settings.initializeSDK();
           if (__DEV__) {
-            console.log("✅ Sent 'test_event' to Meta and flushed! Check Test Events tab.");
+            console.log("✅ Meta SDK initialized on Android");
           }
-        }, 2000);
-
-        if (__DEV__) {
-          console.log("✅ Meta SDK initialized and activated");
         }
       } catch (error) {
         console.warn("⚠️ Meta SDK init failed (non-fatal):", error.message);
