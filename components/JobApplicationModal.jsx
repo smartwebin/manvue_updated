@@ -29,6 +29,25 @@ const JobApplicationModal = ({
   submitting,
   onSubmit,
 }) => {
+  const parseDateString = (dateStr) => {
+    if (!dateStr) return new Date();
+    if (typeof dateStr !== 'string') return new Date(dateStr);
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      if (parts[2].length === 4) return new Date(parts[2], parts[1] - 1, parts[0]);
+      if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+
+  const formatDateToDDMMYYYY = (date) => {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
+  };
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const insets = useSafeAreaInsets();
@@ -52,17 +71,12 @@ const JobApplicationModal = ({
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split("T")[0];
+      const formattedDate = formatDateToDDMMYYYY(selectedDate);
       setAvailabilityDate(formattedDate);
     }
   };
 
-  const getDateObject = () => {
-    if (availabilityDate) {
-      return new Date(availabilityDate);
-    }
-    return new Date();
-  };
+  const getDateObject = () => parseDateString(availabilityDate);
 
   return (
     <Modal
@@ -225,7 +239,7 @@ const JobApplicationModal = ({
                       : theme.colors.text.placeholder,
                   }}
                 >
-                  {availabilityDate || "YYYY-MM-DD"}
+                  {availabilityDate ? formatDateToDDMMYYYY(getDateObject()) : "DD-MM-YYYY"}
                 </Text>
                 <Ionicons
                   name="calendar-outline"

@@ -19,6 +19,25 @@ const CustomDatePicker = ({
   labelStyle = {},
   errorStyle = {},
 }) => {
+  const parseDateString = (dateStr) => {
+    if (!dateStr) return new Date();
+    if (typeof dateStr !== 'string') return new Date(dateStr);
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      if (parts[2].length === 4) return new Date(parts[2], parts[1] - 1, parts[0]);
+      if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+
+  const formatDateToDDMMYYYY = (date) => {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
+  };
+
   const [isFocused, setIsFocused] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -36,7 +55,7 @@ const CustomDatePicker = ({
   const handleDateChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
-      const formatted = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      const formatted = formatDateToDDMMYYYY(selectedDate);
       onChange(formatted);
     }
   };
@@ -113,7 +132,7 @@ const CustomDatePicker = ({
               : theme.colors.text.placeholder,
           }}
         >
-          {value || placeholder}
+          {value ? formatDateToDDMMYYYY(parseDateString(value)) : placeholder}
         </Text>
 
         {/* Right Icon */}
@@ -153,7 +172,7 @@ const CustomDatePicker = ({
       {/* Date Picker Modal */}
       {showPicker && (
         <DateTimePicker
-          value={value ? new Date(value) : new Date()}
+          value={value ? parseDateString(value) : new Date()}
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}

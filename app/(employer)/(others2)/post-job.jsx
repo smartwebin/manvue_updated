@@ -32,7 +32,7 @@ export default function CreateJob() {
     jobTitle: "",
     department: "",
     locationCity: "",
-    locationState: "",
+    countryId: null,
     employmentType: "",
     workMode: "",
     experienceMin: "0",
@@ -64,10 +64,10 @@ export default function CreateJob() {
   const [pendingApprovals, setPendingApprovals] = useState([]);
   const [accountStatus, setAccountStatus] = useState("active");
 
-  // State and City dropdowns
-  const [states, setStates] = useState([]);
+  // Country and City dropdowns
+  const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
-  const [selectedStateId, setSelectedStateId] = useState(null);
+  const [selectedCountryId, setSelectedCountryId] = useState(null);
   const [loadingCities, setLoadingCities] = useState(false);
 
   // Dropdown options matching database schema
@@ -119,35 +119,41 @@ export default function CreateJob() {
 
   // Load states on mount
   useEffect(() => {
-    loadStates();
+    loadCountries();
     loadSkills();
     loadUserData();
   }, [loadUserData]);
 
-  // Load cities when state changes
+  // Load cities when country changes (if supported, otherwise just UI change)
   useEffect(() => {
-    if (selectedStateId) {
-      loadCities(selectedStateId);
+    if (selectedCountryId) {
+      // Assuming we're skipping city loading for now since it's country based, or keeping old logic
+      // loadCities(selectedCountryId);
     } else {
       setCities([]);
       setFormData((prev) => ({ ...prev, locationCity: "" }));
     }
-  }, [selectedStateId]);
+  }, [selectedCountryId]);
 
-  // Load states from API
-  const loadStates = async () => {
+  // Load countries from API
+  const loadCountries = async () => {
     try {
-      const response = await apiService.getStates();
+      const response = await apiService.getCountries();
       if (response.success && response.data) {
-        setStates(response.data);
-        console.log("✅ States loaded:", response.data);
+        // Map to dropdown format
+        const formatted = response.data.map(c => ({
+          label: c.country_name,
+          value: c.country_id
+        }));
+        setCountries(formatted);
+        console.log("✅ Countries loaded:", formatted.length);
       } else {
-        console.log("❌ Failed to load states:", response.message);
-        setStates([]);
+        console.log("❌ Failed to load countries:", response.message);
+        setCountries([]);
       }
     } catch (error) {
-      console.log("❌ Error loading states:", error);
-      setStates([]);
+      console.log("❌ Error loading countries:", error);
+      setCountries([]);
     }
   };
 
@@ -183,18 +189,12 @@ export default function CreateJob() {
     }
   };
 
-  // Handle state selection
-  const handleStateSelect = (state_id) => {
-    setSelectedStateId(state_id);
+  // Handle country selection
+  const handleCountrySelect = (countryId) => {
+    setSelectedCountryId(countryId);
+    updateFormData("countryId", countryId);
 
-    console.log("📍 State states:", states);
-    // Find the state_id for the selected state
-    const selectedState = states.find((s) => s.state_id === state_id);
-    if (selectedState) {
-      updateFormData("locationState", selectedState.label);
-    }
-
-    // Clear city when state changes
+    // Clear city when country changes
     updateFormData("locationCity", "");
   };
 
@@ -309,8 +309,8 @@ export default function CreateJob() {
     if (!formData.job_opening)
       newErrors.job_opening = "Opening Type is required";
 
-    if (!formData.locationState.trim())
-      newErrors.locationState = "State is required";
+    if (!formData.countryId)
+      newErrors.countryId = "Country is required";
     if (!formData.locationCity.trim())
       newErrors.locationCity = "City is required";
     if (!formData.employmentType)
@@ -396,7 +396,7 @@ export default function CreateJob() {
         jobTitle: formData.jobTitle,
         department: formData.department,
         locationCity: formData.locationCity,
-        locationState: formData.locationState,
+        countryId: formData.countryId,
         employmentType: formData.employmentType,
         workMode: formData.workMode,
         experienceMin: parseInt(formData.experienceMin) || 0,
@@ -431,7 +431,7 @@ export default function CreateJob() {
         companyId,
         jobTitle: jobData.jobTitle,
         locationCity: jobData.locationCity,
-        locationState: jobData.locationState,
+        countryId: jobData.countryId,
         skillsCount: skills.length,
         isDraft,
       });
@@ -494,7 +494,7 @@ export default function CreateJob() {
       jobTitle: "Senior React Native Developer",
       department: "Engineering",
       locationCity: "Mumbai",
-      locationState: "Maharashtra",
+      countryId: null,
       employmentType: "full_time",
       workMode: "hybrid",
       experienceMin: "3",
@@ -823,15 +823,15 @@ export default function CreateJob() {
               error={errors.jobCategory}
             />
 
-            {/* State Dropdown */}
+            {/* Country Dropdown */}
             <CustomDropdown3
-              label="State"
-              value={selectedStateId}
-              onSelect={handleStateSelect}
-              options={states}
-              placeholder="Select state"
-              icon="location-outline"
-              error={errors.locationState}
+              label="Country"
+              value={selectedCountryId}
+              onSelect={handleCountrySelect}
+              options={countries}
+              placeholder="Select country"
+              icon="earth-outline"
+              error={errors.countryId}
               required
             />
 

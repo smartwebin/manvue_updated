@@ -36,6 +36,14 @@ const ScheduleInterviewModal = ({
   schedulingInterview,
   onSchedule,
 }) => {
+  const formatDateToDDMMYYYY = (date) => {
+    if (!date) return "";
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}-${m}-${y}`;
+  };
+
   const onDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
@@ -184,12 +192,7 @@ const ScheduleInterviewModal = ({
                         color: theme.colors.text.primary,
                       }}
                     >
-                      {interviewDate.toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {formatDateToDDMMYYYY(interviewDate)}
                     </Text>
                   </TouchableOpacity>
                 </View>
