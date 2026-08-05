@@ -2,7 +2,7 @@ import apiService from "@/services/apiService";
 import theme from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -1118,12 +1118,20 @@ export default function EmployerCandidates() {
     rejected: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const params = useLocalSearchParams();
+
+  useEffect(() => {
+    if (params.tab) {
+      setActiveFilter(params.tab);
+    }
+  }, [params.tab]);
   const [pagination, setPagination] = useState({
     limit: 20,
     offset: 0,
   });
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [employerUserId, setEmployerUserId] = useState(null);
   const [companyId, setCompanyId] = useState(null);
   const [totalCount, setTotalCount] = useState(0);
