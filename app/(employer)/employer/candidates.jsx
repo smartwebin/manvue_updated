@@ -1118,7 +1118,6 @@ export default function EmployerCandidates() {
     rejected: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("all");
   const params = useLocalSearchParams();
 
   useEffect(() => {
