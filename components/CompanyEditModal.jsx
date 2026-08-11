@@ -1,6 +1,7 @@
 import theme from '@/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
+import CustomDatePicker from '@/components/CustomDatePicker';
 import {
   ActivityIndicator,
   Modal,
@@ -42,6 +43,7 @@ const CompanyEditModal = ({
       phone: 'Phone Number',
       address: 'Address',
       description: 'Company Description',
+      full_address: 'Full Address',
     };
     return labels[field] || field;
   };
