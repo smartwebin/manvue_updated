@@ -1953,7 +1953,7 @@ export default function Profile() {
             label="Current Salary"
             value={
               userProfile?.current_salary
-                ? `₹${userProfile.current_salary}`
+                ? `${userProfile.current_salary}`
                 : "Not specified"
             }
             field="current_salary"
@@ -1962,7 +1962,7 @@ export default function Profile() {
             label="Expected Salary"
             value={
               userProfile?.expected_salary
-                ? `₹${userProfile.expected_salary}`
+                ? `${userProfile.expected_salary}`
                 : "Not specified"
             }
             field="expected_salary"
