@@ -2,7 +2,7 @@ import theme from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from 'react';
-import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View, Modal } from 'react-native';
 
 const CustomDatePicker = ({
   label,
@@ -40,6 +40,7 @@ const CustomDatePicker = ({
 
   const [isFocused, setIsFocused] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [tempDate, setTempDate] = useState(value ? parseDateString(value) : new Date());
 
   const getBorderColor = () => {
     if (error) return theme.colors.status.error;
@@ -53,11 +54,24 @@ const CustomDatePicker = ({
   };
 
   const handleDateChange = (event, selectedDate) => {
-    setShowPicker(false);
-    if (selectedDate) {
-      const formatted = formatDateToDDMMYYYY(selectedDate);
-      onChange(formatted);
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+      if (selectedDate) {
+        const formatted = formatDateToDDMMYYYY(selectedDate);
+        onChange(formatted);
+      }
+    } else {
+      if (selectedDate) {
+        setTempDate(selectedDate);
+      }
     }
+  };
+
+  const confirmIOSDate = () => {
+    setShowPicker(false);
+    const dateToUse = tempDate || new Date();
+    const formatted = formatDateToDDMMYYYY(dateToUse);
+    onChange(formatted);
   };
 
   return (
@@ -95,7 +109,12 @@ const CustomDatePicker = ({
       {/* Input Box */}
       <TouchableOpacity
         activeOpacity={editable ? 0.8 : 1}
-        onPress={() => editable && setShowPicker(true)}
+        onPress={() => {
+          if (editable) {
+            setTempDate(value ? parseDateString(value) : new Date());
+            setShowPicker(true);
+          }
+        }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         style={{
@@ -170,13 +189,39 @@ const CustomDatePicker = ({
       )}
 
       {/* Date Picker Modal */}
-      {showPicker && (
-        <DateTimePicker
-          value={value ? parseDateString(value) : new Date()}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleDateChange}
-        />
+      {Platform.OS === 'ios' ? (
+        <Modal visible={showPicker} transparent={true} animationType="slide">
+          <TouchableOpacity 
+            style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }} 
+            activeOpacity={1} 
+            onPress={() => setShowPicker(false)}
+          >
+            <TouchableOpacity activeOpacity={1} style={{ backgroundColor: theme.colors.background.card, paddingBottom: 30 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', padding: theme.spacing.md, borderBottomWidth: 1, borderColor: theme.colors.border.light }}>
+                <TouchableOpacity onPress={confirmIOSDate}>
+                  <Text style={{ color: theme.colors.primary.teal, fontFamily: theme.typography.fonts.bold, fontSize: theme.typography.sizes.md }}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={tempDate}
+                mode="date"
+                display="spinner"
+                themeVariant="light"
+                textColor={theme.colors.text.primary}
+                onChange={handleDateChange}
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+      ) : (
+        showPicker && (
+          <DateTimePicker
+            value={value ? parseDateString(value) : new Date()}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )
       )}
     </View>
   );
